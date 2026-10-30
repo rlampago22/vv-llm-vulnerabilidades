@@ -1,0 +1,3 @@
+# LF em todas as plataformas: o sha256 dos casos em dados/amostra.csv é
+# calculado sobre o arquivo com LF.
+* text=auto eol=lf
