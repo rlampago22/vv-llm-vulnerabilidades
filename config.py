@@ -37,7 +37,7 @@ CWES = {
 # versão desativada). Na API do Azure, o campo `model` recebe o nome do deployment,
 # lido de AZURE_OPENAI_DEPLOYMENT; o snapshot fica registrado aqui e é conferido
 # contra o `model` devolvido em cada resposta.
-MODELO = "gpt-4o-mini-2024-07-18"
+MODELO = "gpt-4.1-mini-2025-04-14"
 AZURE_API_VERSION = "2024-10-21"
 TEMPERATURA = 0.2
 TOP_P = 0.9

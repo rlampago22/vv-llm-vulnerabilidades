@@ -75,17 +75,28 @@ Antes de seguir, abra alguns arquivos de `dados\casos\` e confira a anonimizaç�
 
 ## 4. Azure OpenAI
 
-No portal do Azure (assinatura Azure for Students), crie um recurso Azure OpenAI e
-implante o modelo `gpt-4o-mini` na versão **2024-07-18**, com a política de
-atualização de versão em *no auto-upgrade*. Anote a data de desativação mostrada
-para essa versão e confira com a citada no artigo.
+Implantação usada na coleta (assinatura Azure for Students, recurso Foundry):
 
-Depois, na sessão do PowerShell em que a coleta vai rodar:
+| Item | Valor |
+|---|---|
+| Modelo e versão | `gpt-4.1-mini`, **2025-04-14** |
+| Nome do deployment | `gpt41mini-vv` |
+| Tipo | Padrão Global (*Global Standard*), 200K tokens por minuto |
+| Atualização de versão | desativada (*opt out* das atualizações automáticas) |
+| Filtro de conteúdo | DefaultV2 |
+| Região do recurso | North Central US |
+| Desativação da versão | 14/04/2027, 00h UTC |
+
+O `gpt-4o-mini` 2024-07-18, planejado de início, já estava descontinuado e sem
+cota para novas implantações nessa assinatura.
+
+Depois, na sessão do PowerShell em que a coleta vai rodar, use o **Ponto de
+extremidade do OpenAI do Azure** (não o do projeto):
 
 ```powershell
 $env:AZURE_OPENAI_ENDPOINT   = "https://<seu-recurso>.openai.azure.com/"
 $env:AZURE_OPENAI_API_KEY    = "sua-chave"
-$env:AZURE_OPENAI_DEPLOYMENT = "nome-do-deployment"
+$env:AZURE_OPENAI_DEPLOYMENT = "gpt41mini-vv"
 ```
 
 Não grave a chave em nenhum arquivo do projeto. A versão da API (`AZURE_API_VERSION`)
@@ -141,7 +152,7 @@ Na análise, use para cada `id` a linha com `status` válido, abstenção ou fil
 
 ## Custo e tempo
 
-2.400 chamadas com o `gpt-4o-mini-2024-07-18` devem custar poucos dólares (confira
+2.400 chamadas com o `gpt-4.1-mini-2025-04-14` devem custar poucos dólares (confira
 o preço atual) e levam menos de uma hora com 4 requisições simultâneas
 (`--workers`). O snapshot tem desativação anunciada; faça a coleta bem antes dela
 e guarde a pasta `resultados\`.
