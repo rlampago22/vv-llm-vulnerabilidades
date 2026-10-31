@@ -3,7 +3,7 @@
 Rodar com: python test_unidades.py   (ou: python -m pytest test_unidades.py)
 """
 
-from anonimizacao import anonimizar, remover_comentarios
+from anonimizacao import anonimizar, neutralizar_literais, remover_comentarios
 from parsing import interpretar
 
 JAVA = '''/**
@@ -41,6 +41,17 @@ def test_anonimiza_identificadores():
     assert 'request.getHeader("CasoAnalisado")' in saida
     assert saida.startswith("package org.owasp.benchmark.testcode;")
     assert "\n\n\n" not in saida
+
+
+def test_neutraliza_safe_so_em_literais():
+    codigo = ('valuesList.add("safe"); String bar = "safe!"; sb.append(" SafeStuff");\n'
+              'x = "moresafe"; y = "_SafeDonna"; boolean safeMode = true;')
+    saida = neutralizar_literais(codigo)
+    assert 'valuesList.add("item")' in saida
+    assert '"item!"' in saida and '" ItemStuff"' in saida
+    assert '"moreitem"' in saida and '"_ItemDonna"' in saida
+    assert "boolean safeMode" in saida  # fora de literal, não muda
+    assert len(saida) == len(codigo)
 
 
 def test_parsing_valido():

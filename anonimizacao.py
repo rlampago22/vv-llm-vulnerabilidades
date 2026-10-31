@@ -1,7 +1,14 @@
 """Anonimização dos casos do OWASP Benchmark (Seção 4.3 do artigo).
 
 Remove comentários com um analisador léxico simples, que respeita literais de
-texto e de caractere, e substitui os identificadores que revelam o caso.
+texto e de caractere, substitui os identificadores que revelam o caso e
+neutraliza a palavra "safe" dentro de literais de texto.
+
+O benchmark constrói muitos casos não vulneráveis trocando a entrada por
+constantes como "safe", "moresafe" ou " SafeStuff"; o valor não altera a
+vulnerabilidade, mas a palavra sinaliza o rótulo. A troca preserva o
+comprimento e a caixa ("safe" -> "item"), para não mudar índices nem
+comparações entre literais do mesmo arquivo.
 """
 
 import re
@@ -9,6 +16,17 @@ import re
 NOME_CLASSE = "CasoAnalisado"
 _RE_ID_CASO = re.compile(r"BenchmarkTest\d{5}")
 _RE_WEBSERVLET = re.compile(r"@WebServlet\s*\([^)]*\)")
+_RE_LITERAL = re.compile(r'"(?:[^"\\\n]|\\.)*"')
+_RE_SAFE = re.compile(r"safe", re.IGNORECASE)
+_NEUTRO = "item"
+
+
+def _trocar_mantendo_caixa(m: re.Match) -> str:
+    return "".join(n.upper() if o.isupper() else n for o, n in zip(m.group(), _NEUTRO))
+
+
+def neutralizar_literais(codigo: str) -> str:
+    return _RE_LITERAL.sub(lambda m: _RE_SAFE.sub(_trocar_mantendo_caixa, m.group()), codigo)
 
 
 def remover_comentarios(fonte: str) -> str:
@@ -56,4 +74,5 @@ def anonimizar(fonte: str) -> str:
     codigo = remover_comentarios(fonte)
     codigo = _RE_ID_CASO.sub(NOME_CLASSE, codigo)
     codigo = _RE_WEBSERVLET.sub('@WebServlet(value = "/caso")', codigo)
+    codigo = neutralizar_literais(codigo)
     return _normalizar_linhas(codigo)
