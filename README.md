@@ -57,7 +57,9 @@ python test_unidades.py
 git clone https://github.com/OWASP-Benchmark/BenchmarkJava.git
 ```
 
-O clone precisa ficar em `experimento\BenchmarkJava`. O script lê
+O clone precisa ficar em `experimento\BenchmarkJava`. A amostra foi gerada a partir
+do commit `f40c618c5a709afce350ef06ed2899c85cf586e9` (licença GPL-2.0); para
+reproduzir exatamente, faça `git checkout` desse commit dentro do clone. O script lê
 `expectedresults-1.2.csv` e os fontes em `src\main\java\org\owasp\benchmark\testcode`.
 
 ## 3. Amostra
