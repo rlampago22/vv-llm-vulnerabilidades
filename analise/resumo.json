@@ -1,0 +1,372 @@
+{
+  "n_casos": 120,
+  "k": 5,
+  "n_bootstrap": 10000,
+  "condicoes": {
+    "zero_shot": {
+      "tp": 299,
+      "fp": 133,
+      "fn": 1,
+      "tn": 167,
+      "precisao": 0.6921296296296297,
+      "revocacao": 0.9966666666666667,
+      "f1": 0.8169398907103825,
+      "ic95": {
+        "precisao": [
+          0.588652079303675,
+          0.7883732584036878
+        ],
+        "revocacao": [
+          0.9890909090909091,
+          1.0
+        ],
+        "f1": [
+          0.7399992570579494,
+          0.8802323633641651
+        ]
+      },
+      "execucoes": 600,
+      "status": {
+        "valido": 600
+      },
+      "motivos_abstencao": {},
+      "taxa_abstencao": 0.0,
+      "cobertura": 1.0,
+      "f1_efetivo": 0.8169398907103825,
+      "distribuicao_k": {
+        "5": 120
+      },
+      "voto_majoritario": {
+        "acertos": 93,
+        "empates": 0
+      },
+      "estabilidade": {
+        "geral": {
+          "n_casos": 120,
+          "media": 0.9916666666666667,
+          "prop_unanimes": 0.9833333333333333
+        },
+        "vulneraveis": {
+          "n_casos": 60,
+          "media": 0.9933333333333334,
+          "prop_unanimes": 0.9833333333333333
+        },
+        "nao_vulneraveis": {
+          "n_casos": 60,
+          "media": 0.99,
+          "prop_unanimes": 0.9833333333333333
+        }
+      },
+      "por_fingerprint": {
+        "fp_dd05abcf72": {
+          "respostas": 286,
+          "acerto": 0.7972027972027972
+        },
+        "fp_ec0045a567": {
+          "respostas": 314,
+          "acerto": 0.7579617834394905
+        }
+      }
+    },
+    "cot": {
+      "tp": 296,
+      "fp": 102,
+      "fn": 4,
+      "tn": 197,
+      "precisao": 0.7437185929648241,
+      "revocacao": 0.9866666666666667,
+      "f1": 0.8481375358166189,
+      "ic95": {
+        "precisao": [
+          0.6465952481347436,
+          0.8333426966292133
+        ],
+        "revocacao": [
+          0.96875,
+          1.0
+        ],
+        "f1": [
+          0.7802022360556227,
+          0.9038715137877382
+        ]
+      },
+      "execucoes": 600,
+      "status": {
+        "valido": 599,
+        "abstencao": 1
+      },
+      "motivos_abstencao": {
+        "sem_veredito": 1
+      },
+      "taxa_abstencao": 0.0016666666666666668,
+      "cobertura": 0.9983333333333333,
+      "f1_efetivo": 0.8467239732569245,
+      "distribuicao_k": {
+        "5": 119,
+        "4": 1
+      },
+      "voto_majoritario": {
+        "acertos": 100,
+        "empates": 0
+      },
+      "estabilidade": {
+        "geral": {
+          "n_casos": 120,
+          "media": 0.9466666666666667,
+          "prop_unanimes": 0.8916666666666667
+        },
+        "vulneraveis": {
+          "n_casos": 60,
+          "media": 0.9766666666666667,
+          "prop_unanimes": 0.95
+        },
+        "nao_vulneraveis": {
+          "n_casos": 60,
+          "media": 0.9166666666666666,
+          "prop_unanimes": 0.8333333333333334
+        }
+      },
+      "por_fingerprint": {
+        "fp_ec0045a567": {
+          "respostas": 298,
+          "acerto": 0.8187919463087249
+        },
+        "fp_dd05abcf72": {
+          "respostas": 301,
+          "acerto": 0.8272425249169435
+        }
+      }
+    },
+    "fluxo": {
+      "tp": 298,
+      "fp": 147,
+      "fn": 0,
+      "tn": 147,
+      "precisao": 0.6696629213483146,
+      "revocacao": 1.0,
+      "f1": 0.8021534320323015,
+      "ic95": {
+        "precisao": [
+          0.5700679116726751,
+          0.7656619809919522
+        ],
+        "revocacao": [
+          1.0,
+          1.0
+        ],
+        "f1": [
+          0.7261697500563299,
+          0.8672803619582614
+        ]
+      },
+      "execucoes": 600,
+      "status": {
+        "valido": 592,
+        "abstencao": 8
+      },
+      "motivos_abstencao": {
+        "sem_veredito": 8
+      },
+      "taxa_abstencao": 0.013333333333333334,
+      "cobertura": 0.9866666666666667,
+      "f1_efetivo": 0.7914580529385375,
+      "distribuicao_k": {
+        "5": 116,
+        "3": 4
+      },
+      "voto_majoritario": {
+        "acertos": 89,
+        "empates": 0
+      },
+      "estabilidade": {
+        "geral": {
+          "n_casos": 120,
+          "media": 0.9744444444444444,
+          "prop_unanimes": 0.95
+        },
+        "vulneraveis": {
+          "n_casos": 60,
+          "media": 1.0,
+          "prop_unanimes": 1.0
+        },
+        "nao_vulneraveis": {
+          "n_casos": 60,
+          "media": 0.9488888888888888,
+          "prop_unanimes": 0.9
+        }
+      },
+      "por_fingerprint": {
+        "fp_ec0045a567": {
+          "respostas": 457,
+          "acerto": 0.7549234135667396
+        },
+        "fp_dd05abcf72": {
+          "respostas": 135,
+          "acerto": 0.7407407407407407
+        }
+      }
+    },
+    "fluxo_skill": {
+      "tp": 300,
+      "fp": 144,
+      "fn": 0,
+      "tn": 155,
+      "precisao": 0.6756756756756757,
+      "revocacao": 1.0,
+      "f1": 0.8064516129032258,
+      "ic95": {
+        "precisao": [
+          0.5743150020881809,
+          0.7717409541873358
+        ],
+        "revocacao": [
+          1.0,
+          1.0
+        ],
+        "f1": [
+          0.7296062096322737,
+          0.8711668060977876
+        ]
+      },
+      "execucoes": 600,
+      "status": {
+        "valido": 599,
+        "abstencao": 1
+      },
+      "motivos_abstencao": {
+        "sem_veredito": 1
+      },
+      "taxa_abstencao": 0.0016666666666666668,
+      "cobertura": 0.9983333333333333,
+      "f1_efetivo": 0.8051075268817204,
+      "distribuicao_k": {
+        "5": 119,
+        "4": 1
+      },
+      "voto_majoritario": {
+        "acertos": 92,
+        "empates": 0
+      },
+      "estabilidade": {
+        "geral": {
+          "n_casos": 120,
+          "media": 0.9808333333333333,
+          "prop_unanimes": 0.9583333333333334
+        },
+        "vulneraveis": {
+          "n_casos": 60,
+          "media": 1.0,
+          "prop_unanimes": 1.0
+        },
+        "nao_vulneraveis": {
+          "n_casos": 60,
+          "media": 0.9616666666666667,
+          "prop_unanimes": 0.9166666666666666
+        }
+      },
+      "por_fingerprint": {
+        "fp_dd05abcf72": {
+          "respostas": 429,
+          "acerto": 0.752913752913753
+        },
+        "fp_ec0045a567": {
+          "respostas": 170,
+          "acerto": 0.7764705882352941
+        }
+      }
+    }
+  },
+  "testes": {
+    "cochran_acerto": {
+      "estatistica": 15.5,
+      "gl": 2,
+      "p": 0.0004307425405756874
+    },
+    "mcnemar_acerto": {
+      "zero_shot x cot": {
+        "so_primeira_acerta": 0,
+        "so_segunda_acerta": 7,
+        "p": 0.015625,
+        "p_holm": 0.03125
+      },
+      "zero_shot x fluxo": {
+        "so_primeira_acerta": 5,
+        "so_segunda_acerta": 1,
+        "p": 0.21875,
+        "p_holm": 0.21875
+      },
+      "cot x fluxo": {
+        "so_primeira_acerta": 11,
+        "so_segunda_acerta": 0,
+        "p": 0.0009765625,
+        "p_holm": 0.0029296875
+      }
+    },
+    "friedman_concordancia": {
+      "n": 120,
+      "estatistica": 8.786885245900805,
+      "p": 0.012358111585741812
+    },
+    "wilcoxon_concordancia": {
+      "zero_shot x cot": {
+        "n": 120,
+        "estatistica": 16.5,
+        "p": 0.010975802958107664,
+        "p_holm": 0.032927408874322994
+      },
+      "zero_shot x fluxo": {
+        "n": 120,
+        "estatistica": 4.0,
+        "p": 0.08808151166219029,
+        "p_holm": 0.17616302332438058
+      },
+      "cot x fluxo": {
+        "n": 120,
+        "estatistica": 64.5,
+        "p": 0.20783519252617833,
+        "p_holm": 0.20783519252617833
+      }
+    },
+    "skill_mcnemar_acerto": {
+      "so_primeira_acerta": 0,
+      "so_segunda_acerta": 3,
+      "p": 0.25
+    },
+    "skill_wilcoxon_concordancia": {
+      "n": 120,
+      "estatistica": 4.0,
+      "p": 0.33628879040286896
+    },
+    "mannwhitney_concordancia_por_rotulo": {
+      "zero_shot": {
+        "n_vuln": 60,
+        "n_nao_vuln": 60,
+        "u": 1800.5,
+        "p": 1.0,
+        "p_holm": 1.0
+      },
+      "cot": {
+        "n_vuln": 60,
+        "n_nao_vuln": 60,
+        "u": 2012.5,
+        "p": 0.03906022658337138,
+        "p_holm": 0.07812045316674276
+      },
+      "fluxo": {
+        "n_vuln": 60,
+        "n_nao_vuln": 60,
+        "u": 1980.0,
+        "p": 0.012603994012380616,
+        "p_holm": 0.050415976049522464
+      },
+      "fluxo_skill": {
+        "n_vuln": 60,
+        "n_nao_vuln": 60,
+        "u": 1950.0,
+        "p": 0.023419800848889744,
+        "p_holm": 0.07025940254666924
+      }
+    },
+    "alfa": 0.05
+  }
+}

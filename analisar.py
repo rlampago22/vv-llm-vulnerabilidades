@@ -1,0 +1,394 @@
+"""Análise pré-especificada dos resultados (Seções 2.4 e 4.5 do artigo).
+
+Uso: python analisar.py
+
+Lê resultados/amostra.jsonl e dados/amostra.csv e grava em analise/:
+  resumo.json   todas as métricas e testes
+  tabelas.tex   tabelas da Seção 5
+e imprime o resumo no terminal.
+
+Regras de agregação:
+- Desempenho por execução: cada resposta válida é uma classificação; abstenções
+  ficam fora do F1 e entram na cobertura (F1 efetivo = F1 x cobertura).
+- Intervalos de 95% por bootstrap percentil, reamostrando casos (não execuções),
+  com os mesmos índices para todas as condições.
+- Voto majoritário por (caso, condição) sobre as execuções válidas. Empate, ou
+  nenhuma execução válida, conta como erro (regra conservadora); o número de
+  empates é reportado.
+- Concordância por pares só com K >= 2 execuções válidas; senão, indefinida.
+"""
+
+import csv
+import json
+import sys
+from collections import Counter
+from itertools import combinations
+
+import numpy as np
+from scipy import stats
+
+from config import (ALFA, ARQ_AMOSTRA, DIR_ANALISE, DIR_RESULTADOS, K_REPETICOES,
+                    N_BOOTSTRAP, SEMENTE_BOOTSTRAP)
+from prompts import CONDICOES
+
+ESTRATEGIAS = ("zero_shot", "cot", "fluxo")
+NOMES = {"zero_shot": "Zero-shot", "cot": "CoT", "fluxo": "Fluxo de dados",
+         "fluxo_skill": "Fluxo de dados + \\textit{skill}"}
+FINAIS = ("valido", "abstencao", "filtro")
+VULN = "VULNERAVEL"
+
+
+# ---------------------------------------------------------------- leitura
+
+def carregar() -> tuple[dict, list[str], list[dict]]:
+    with ARQ_AMOSTRA.open(encoding="utf-8") as f:
+        rotulos = {c["caso"]: c["rotulo_real"] for c in csv.DictReader(f)
+                   if c["conjunto"] == "amostra"}
+    registros = {}
+    with (DIR_RESULTADOS / "amostra.jsonl").open(encoding="utf-8") as f:
+        for linha in f:
+            r = json.loads(linha)
+            if r["status"] in FINAIS:  # linhas erro_api ficam só como registro
+                registros[r["id"]] = r
+    esperado = len(rotulos) * len(CONDICOES) * K_REPETICOES
+    if len(registros) != esperado:
+        sys.exit(f"Coleta incompleta: {len(registros)} de {esperado} requisições concluídas.")
+    return rotulos, sorted(rotulos), list(registros.values())
+
+
+# ---------------------------------------------------------------- métricas
+
+def razao(num, den):
+    return num / den if den else None
+
+
+def prf(tp, fp, fn):
+    return razao(tp, tp + fp), razao(tp, tp + fn), razao(2 * tp, 2 * tp + fp + fn)
+
+
+def matriz_por_caso(vereditos: dict, rotulos: dict, casos: list[str]) -> np.ndarray:
+    """Contagens de TP, FP, FN, TN por caso, somando as execuções válidas."""
+    m = np.zeros((len(casos), 4), dtype=int)
+    for i, caso in enumerate(casos):
+        vulneravel = rotulos[caso] == VULN
+        for v in vereditos[caso]:
+            if v == VULN:
+                m[i, 0 if vulneravel else 1] += 1
+            else:
+                m[i, 2 if vulneravel else 3] += 1
+    return m
+
+
+def ic_bootstrap(m: np.ndarray, indices: np.ndarray) -> dict:
+    tp, fp, fn, _ = m[indices].sum(axis=1).T.astype(float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        amostras = {"precisao": tp / (tp + fp), "revocacao": tp / (tp + fn),
+                    "f1": 2 * tp / (2 * tp + fp + fn)}
+    return {k: [float(np.nanpercentile(v, 2.5)), float(np.nanpercentile(v, 97.5))]
+            for k, v in amostras.items()}
+
+
+def concordancia(vs: list[str]):
+    k = len(vs)
+    if k < 2:
+        return None
+    nv = vs.count(VULN)
+    nn = k - nv
+    return (nv * (nv - 1) + nn * (nn - 1)) / (k * (k - 1))
+
+
+def acerto_majoritario(vs: list[str], rotulo: str) -> tuple[int, bool]:
+    nv = vs.count(VULN)
+    nn = len(vs) - nv
+    if nv == nn:  # empate ou nenhuma execução válida
+        return 0, True
+    return int((VULN if nv > nn else "NAO_VULNERAVEL") == rotulo), False
+
+
+def media(xs):
+    xs = [x for x in xs if x is not None]
+    return sum(xs) / len(xs) if xs else None
+
+
+def resumo_estabilidade(concs: dict, rotulos: dict, filtro=None) -> dict:
+    valores = [c for caso, c in concs.items()
+               if c is not None and (filtro is None or rotulos[caso] == filtro)]
+    return {"n_casos": len(valores), "media": media(valores),
+            "prop_unanimes": razao(sum(v == 1 for v in valores), len(valores))}
+
+
+# ---------------------------------------------------------------- testes
+
+def cochran_q(x: np.ndarray) -> dict:
+    n, k = x.shape
+    col = x.sum(axis=0)
+    lin = x.sum(axis=1)
+    total = x.sum()
+    den = k * total - (lin ** 2).sum()
+    if den == 0:
+        return {"estatistica": None, "gl": k - 1, "p": None}
+    q = (k - 1) * (k * (col ** 2).sum() - total ** 2) / den
+    return {"estatistica": float(q), "gl": k - 1, "p": float(stats.chi2.sf(q, k - 1))}
+
+
+def mcnemar_exato(a: np.ndarray, b: np.ndarray) -> dict:
+    so_a = int(((a == 1) & (b == 0)).sum())
+    so_b = int(((a == 0) & (b == 1)).sum())
+    p = stats.binomtest(so_a, so_a + so_b, 0.5).pvalue if so_a + so_b else 1.0
+    return {"so_primeira_acerta": so_a, "so_segunda_acerta": so_b, "p": float(p)}
+
+
+def wilcoxon(x, y) -> dict:
+    if all(a == b for a, b in zip(x, y)):  # sem diferenças: teste indefinido
+        return {"n": len(x), "estatistica": None, "p": None, "nota": "sem diferenças"}
+    res = stats.wilcoxon(x, y)
+    return {"n": len(x), "estatistica": float(res.statistic), "p": float(res.pvalue)}
+
+
+def holm(ps: list) -> list:
+    validos = [(p, i) for i, p in enumerate(ps) if p is not None]
+    ajustados = [None] * len(ps)
+    acumulado = 0.0
+    for posicao, (p, i) in enumerate(sorted(validos)):
+        acumulado = max(acumulado, min(1.0, (len(validos) - posicao) * p))
+        ajustados[i] = acumulado
+    return ajustados
+
+
+def pareados(concs: dict, a: str, b: str) -> tuple[list, list]:
+    casos = [c for c in concs[a] if concs[a][c] is not None and concs[b][c] is not None]
+    return [concs[a][c] for c in casos], [concs[b][c] for c in casos]
+
+
+# ---------------------------------------------------------------- análise
+
+def analisar() -> dict:
+    rotulos, casos, registros = carregar()
+    vereditos = {c: {caso: [] for caso in casos} for c in CONDICOES}
+    status = {c: Counter() for c in CONDICOES}
+    motivos = {c: Counter() for c in CONDICOES}
+    fingerprints = {c: Counter() for c in CONDICOES}
+    acerto_fp = {c: Counter() for c in CONDICOES}
+    for r in registros:
+        c = r["condicao"]
+        status[c][r["status"]] += 1
+        if r["status"] == "abstencao":
+            motivos[c][r["motivo"]] += 1
+        if r["status"] == "valido":
+            vereditos[c][r["caso"]].append(r["veredito"])
+            fp = r.get("system_fingerprint")
+            fingerprints[c][fp] += 1
+            acerto_fp[c][fp] += r["veredito"] == r["rotulo_real"]
+
+    rng = np.random.default_rng(SEMENTE_BOOTSTRAP)
+    indices = rng.integers(0, len(casos), size=(N_BOOTSTRAP, len(casos)))
+
+    resultado = {"n_casos": len(casos), "k": K_REPETICOES, "n_bootstrap": N_BOOTSTRAP,
+                 "condicoes": {}, "testes": {}}
+    acertos, concs = {}, {}
+    for c in CONDICOES:
+        m = matriz_por_caso(vereditos[c], rotulos, casos)
+        tp, fp, fn, tn = (int(v) for v in m.sum(axis=0))
+        p, r, f1 = prf(tp, fp, fn)
+        total = sum(status[c].values())
+        abstencao = status[c]["abstencao"] / total
+        cobertura = 1 - abstencao
+        votos = [acerto_majoritario(vereditos[c][caso], rotulos[caso]) for caso in casos]
+        acertos[c] = np.array([v for v, _ in votos])
+        concs[c] = {caso: concordancia(vereditos[c][caso]) for caso in casos}
+        resultado["condicoes"][c] = {
+            "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+            "precisao": p, "revocacao": r, "f1": f1,
+            "ic95": ic_bootstrap(m, indices),
+            "execucoes": total, "status": dict(status[c]), "motivos_abstencao": dict(motivos[c]),
+            "taxa_abstencao": abstencao, "cobertura": cobertura,
+            "f1_efetivo": f1 * cobertura if f1 is not None else None,
+            "distribuicao_k": dict(Counter(len(vereditos[c][caso]) for caso in casos)),
+            "voto_majoritario": {"acertos": int(acertos[c].sum()),
+                                 "empates": sum(e for _, e in votos)},
+            "estabilidade": {
+                "geral": resumo_estabilidade(concs[c], rotulos),
+                "vulneraveis": resumo_estabilidade(concs[c], rotulos, VULN),
+                "nao_vulneraveis": resumo_estabilidade(concs[c], rotulos, "NAO_VULNERAVEL"),
+            },
+            "por_fingerprint": {fp: {"respostas": n, "acerto": acerto_fp[c][fp] / n}
+                                for fp, n in fingerprints[c].items()},
+        }
+
+    # Pergunta principal: três estratégias de prompting.
+    t = resultado["testes"]
+    t["cochran_acerto"] = cochran_q(np.column_stack([acertos[c] for c in ESTRATEGIAS]))
+    pares = list(combinations(ESTRATEGIAS, 2))
+    mcn = [mcnemar_exato(acertos[a], acertos[b]) for a, b in pares]
+    for teste, p_holm in zip(mcn, holm([x["p"] for x in mcn])):
+        teste["p_holm"] = p_holm
+    t["mcnemar_acerto"] = {f"{a} x {b}": x for (a, b), x in zip(pares, mcn)}
+
+    completos = [caso for caso in casos if all(concs[c][caso] is not None for c in ESTRATEGIAS)]
+    colunas = [[concs[c][caso] for caso in completos] for c in ESTRATEGIAS]
+    if len({tuple(col) for col in colunas}) == 1:
+        t["friedman_concordancia"] = {"n": len(completos), "estatistica": None, "p": None,
+                                      "nota": "sem diferenças"}
+    else:
+        fr = stats.friedmanchisquare(*colunas)
+        t["friedman_concordancia"] = {"n": len(completos), "estatistica": float(fr.statistic),
+                                      "p": float(fr.pvalue)}
+    wil = [wilcoxon(*pareados(concs, a, b)) for a, b in pares]
+    for teste, p_holm in zip(wil, holm([x["p"] for x in wil])):
+        teste["p_holm"] = p_holm
+    t["wilcoxon_concordancia"] = {f"{a} x {b}": x for (a, b), x in zip(pares, wil)}
+
+    # Pergunta exploratória: contraste único fluxo x fluxo_skill (sem ajuste).
+    t["skill_mcnemar_acerto"] = mcnemar_exato(acertos["fluxo"], acertos["fluxo_skill"])
+    t["skill_wilcoxon_concordancia"] = wilcoxon(*pareados(concs, "fluxo", "fluxo_skill"))
+
+    # Pergunta secundária: vulneráveis x não vulneráveis dentro de cada condição.
+    mw = {}
+    for c in CONDICOES:
+        v = [x for caso, x in concs[c].items() if x is not None and rotulos[caso] == VULN]
+        n = [x for caso, x in concs[c].items() if x is not None and rotulos[caso] != VULN]
+        res = stats.mannwhitneyu(v, n, alternative="two-sided")
+        mw[c] = {"n_vuln": len(v), "n_nao_vuln": len(n), "u": float(res.statistic),
+                 "p": float(res.pvalue)}
+    for c, p_holm in zip(CONDICOES, holm([mw[c]["p"] for c in CONDICOES])):
+        mw[c]["p_holm"] = p_holm
+    t["mannwhitney_concordancia_por_rotulo"] = mw
+    t["alfa"] = ALFA
+    return resultado
+
+
+# ---------------------------------------------------------------- saída
+
+def num(x, casas=3):
+    return "--" if x is None else f"{x:.{casas}f}".replace(".", ",")
+
+
+def pct(x):
+    return "--" if x is None else f"{100 * x:.1f}\\%".replace(".", ",")
+
+
+def com_ic(valor, ic):
+    return f"{num(valor, 2)} ({num(ic[0], 2)}--{num(ic[1], 2)})"
+
+
+def valor_p(p):
+    if p is None:
+        return "--"
+    return "$<$0,001" if p < 0.001 else num(p)
+
+
+def tabelas_latex(res: dict) -> str:
+    linhas = []
+    for c in CONDICOES:
+        d = res["condicoes"][c]
+        ic = d["ic95"]
+        linhas.append(" & ".join([
+            NOMES[c], str(d["tp"]), str(d["fp"]), str(d["fn"]), str(d["tn"]),
+            com_ic(d["precisao"], ic["precisao"]), com_ic(d["revocacao"], ic["revocacao"]),
+            com_ic(d["f1"], ic["f1"]), pct(d["taxa_abstencao"]), num(d["cobertura"]),
+            num(d["f1_efetivo"])]) + " \\\\")
+    desempenho = "\n".join([
+        "\\begin{table*}[t]",
+        "\\caption{Desempenho por condição, por execução (600 execuções por condição). "
+        "Entre parênteses, IC de 95\\% por \\textit{bootstrap} reamostrando casos.}",
+        "\\label{tab:desempenho}",
+        "\\small",
+        "\\begin{tabular}{lrrrrcccrcc}",
+        "\\toprule",
+        "Condição & TP & FP & FN & TN & Precisão & Revocação & F1 & Abstenção & Cobertura & F1 efetivo \\\\",
+        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
+
+    linhas = []
+    for c in CONDICOES:
+        e = res["condicoes"][c]["estabilidade"]
+        linhas.append(" & ".join([
+            NOMES[c],
+            num(e["geral"]["media"]), num(e["vulneraveis"]["media"]),
+            num(e["nao_vulneraveis"]["media"]),
+            pct(e["geral"]["prop_unanimes"]), pct(e["vulneraveis"]["prop_unanimes"]),
+            pct(e["nao_vulneraveis"]["prop_unanimes"])]) + " \\\\")
+    estabilidade = "\n".join([
+        "\\begin{table}[t]",
+        "\\caption{Estabilidade por condição: concordância por pares média e proporção de "
+        "casos unânimes, no total (T) e entre casos vulneráveis (V) e não vulneráveis (NV).}",
+        "\\label{tab:estabilidade}",
+        "\\small",
+        "\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{lcccccc}",
+        "\\toprule",
+        " & \\multicolumn{3}{c}{Concordância média} & \\multicolumn{3}{c}{Casos unânimes} \\\\",
+        "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
+        "Condição & T & V & NV & T & V & NV \\\\",
+        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table}"])
+
+    t = res["testes"]
+    linhas = [f"Cochran Q (acerto, 3 estratégias) & -- & {num(t['cochran_acerto']['estatistica'], 2)} "
+              f"& {valor_p(t['cochran_acerto']['p'])} & -- \\\\"]
+    for par, x in t["mcnemar_acerto"].items():
+        a, b = par.split(" x ")
+        linhas.append(f"McNemar (acerto) & {NOMES[a]} $\\times$ {NOMES[b]} & "
+                      f"{x['so_primeira_acerta']}/{x['so_segunda_acerta']} & {valor_p(x['p'])} & "
+                      f"{valor_p(x['p_holm'])} \\\\")
+    fr = t["friedman_concordancia"]
+    linhas.append(f"Friedman (concordância, 3 estratégias) & -- & {num(fr['estatistica'], 2)} & "
+                  f"{valor_p(fr['p'])} & -- \\\\")
+    for par, x in t["wilcoxon_concordancia"].items():
+        a, b = par.split(" x ")
+        linhas.append(f"Wilcoxon (concordância) & {NOMES[a]} $\\times$ {NOMES[b]} & "
+                      f"{num(x['estatistica'], 1)} & {valor_p(x['p'])} & {valor_p(x['p_holm'])} \\\\")
+    x = t["skill_mcnemar_acerto"]
+    linhas.append(f"McNemar (acerto) & {NOMES['fluxo']} $\\times$ {NOMES['fluxo_skill']} & "
+                  f"{x['so_primeira_acerta']}/{x['so_segunda_acerta']} & {valor_p(x['p'])} & -- \\\\")
+    x = t["skill_wilcoxon_concordancia"]
+    linhas.append(f"Wilcoxon (concordância) & {NOMES['fluxo']} $\\times$ {NOMES['fluxo_skill']} & "
+                  f"{num(x['estatistica'], 1)} & {valor_p(x['p'])} & -- \\\\")
+    for c, x in t["mannwhitney_concordancia_por_rotulo"].items():
+        linhas.append(f"Mann-Whitney (V $\\times$ NV) & {NOMES[c]} & {num(x['u'], 1)} & "
+                      f"{valor_p(x['p'])} & {valor_p(x['p_holm'])} \\\\")
+    testes = "\n".join([
+        "\\begin{table*}[t]",
+        "\\caption{Testes de hipótese. Acerto: voto majoritário por caso (empate conta como "
+        "erro); no McNemar, a estatística indica quantos casos só a primeira/só a segunda "
+        "condição acerta. Valores-$p$ ajustados por Holm dentro de cada família.}",
+        "\\label{tab:testes}",
+        "\\small",
+        "\\begin{tabular}{llccc}",
+        "\\toprule",
+        "Teste & Comparação & Estatística & $p$ & $p$ (Holm) \\\\",
+        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
+    return "\n\n".join([desempenho, estabilidade, testes]) + "\n"
+
+
+def imprimir(res: dict) -> None:
+    for c in CONDICOES:
+        d = res["condicoes"][c]
+        e = d["estabilidade"]
+        print(f"\n== {c}")
+        print(f"  TP={d['tp']} FP={d['fp']} FN={d['fn']} TN={d['tn']}  "
+              f"P={num(d['precisao'])} R={num(d['revocacao'])} F1={num(d['f1'])} "
+              f"IC_F1={[num(x) for x in d['ic95']['f1']]}")
+        print(f"  abstenção={pct(d['taxa_abstencao'])} cobertura={num(d['cobertura'])} "
+              f"F1ef={num(d['f1_efetivo'])} motivos={d['motivos_abstencao']}")
+        print(f"  K={d['distribuicao_k']} voto={d['voto_majoritario']}")
+        print(f"  concordância T/V/NV={num(e['geral']['media'])}/{num(e['vulneraveis']['media'])}/"
+              f"{num(e['nao_vulneraveis']['media'])}  unânimes T/V/NV="
+              f"{pct(e['geral']['prop_unanimes'])}/{pct(e['vulneraveis']['prop_unanimes'])}/"
+              f"{pct(e['nao_vulneraveis']['prop_unanimes'])}")
+        print(f"  por fingerprint={d['por_fingerprint']}")
+    print("\n== testes")
+    print(json.dumps(res["testes"], indent=2, ensure_ascii=False))
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # console do Windows não é UTF-8 por padrão
+    res = analisar()
+    DIR_ANALISE.mkdir(exist_ok=True)
+    (DIR_ANALISE / "resumo.json").write_text(
+        json.dumps(res, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    (DIR_ANALISE / "tabelas.tex").write_text(tabelas_latex(res), encoding="utf-8", newline="\n")
+    imprimir(res)
+    print(f"\nGravado em {DIR_ANALISE}")
+
+
+if __name__ == "__main__":
+    main()

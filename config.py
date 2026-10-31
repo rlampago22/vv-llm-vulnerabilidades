@@ -46,3 +46,9 @@ K_REPETICOES = 5
 
 # Nenhum `seed` é enviado à API: uma semente fixa tornaria as K repetições
 # artificialmente iguais e inflaria a estabilidade medida.
+
+# Análise (Seção 4.5): bootstrap reamostrando casos, nível de significância.
+DIR_ANALISE = RAIZ / "analise"
+SEMENTE_BOOTSTRAP = 20261101
+N_BOOTSTRAP = 10_000
+ALFA = 0.05

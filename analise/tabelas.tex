@@ -1,0 +1,60 @@
+\begin{table*}[t]
+\caption{Desempenho por condição, por execução (600 execuções por condição). Entre parênteses, IC de 95\% por \textit{bootstrap} reamostrando casos.}
+\label{tab:desempenho}
+\small
+\begin{tabular}{lrrrrcccrcc}
+\toprule
+Condição & TP & FP & FN & TN & Precisão & Revocação & F1 & Abstenção & Cobertura & F1 efetivo \\
+\midrule
+Zero-shot & 299 & 133 & 1 & 167 & 0,69 (0,59--0,79) & 1,00 (0,99--1,00) & 0,82 (0,74--0,88) & 0,0\% & 1,000 & 0,817 \\
+CoT & 296 & 102 & 4 & 197 & 0,74 (0,65--0,83) & 0,99 (0,97--1,00) & 0,85 (0,78--0,90) & 0,2\% & 0,998 & 0,847 \\
+Fluxo de dados & 298 & 147 & 0 & 147 & 0,67 (0,57--0,77) & 1,00 (1,00--1,00) & 0,80 (0,73--0,87) & 1,3\% & 0,987 & 0,791 \\
+Fluxo de dados + \textit{skill} & 300 & 144 & 0 & 155 & 0,68 (0,57--0,77) & 1,00 (1,00--1,00) & 0,81 (0,73--0,87) & 0,2\% & 0,998 & 0,805 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\caption{Estabilidade por condição: concordância por pares média e proporção de casos unânimes, no total (T) e entre casos vulneráveis (V) e não vulneráveis (NV).}
+\label{tab:estabilidade}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{Concordância média} & \multicolumn{3}{c}{Casos unânimes} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Condição & T & V & NV & T & V & NV \\
+\midrule
+Zero-shot & 0,992 & 0,993 & 0,990 & 98,3\% & 98,3\% & 98,3\% \\
+CoT & 0,947 & 0,977 & 0,917 & 89,2\% & 95,0\% & 83,3\% \\
+Fluxo de dados & 0,974 & 1,000 & 0,949 & 95,0\% & 100,0\% & 90,0\% \\
+Fluxo de dados + \textit{skill} & 0,981 & 1,000 & 0,962 & 95,8\% & 100,0\% & 91,7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table*}[t]
+\caption{Testes de hipótese. Acerto: voto majoritário por caso (empate conta como erro); no McNemar, a estatística indica quantos casos só a primeira/só a segunda condição acerta. Valores-$p$ ajustados por Holm dentro de cada família.}
+\label{tab:testes}
+\small
+\begin{tabular}{llccc}
+\toprule
+Teste & Comparação & Estatística & $p$ & $p$ (Holm) \\
+\midrule
+Cochran Q (acerto, 3 estratégias) & -- & 15,50 & $<$0,001 & -- \\
+McNemar (acerto) & Zero-shot $\times$ CoT & 0/7 & 0,016 & 0,031 \\
+McNemar (acerto) & Zero-shot $\times$ Fluxo de dados & 5/1 & 0,219 & 0,219 \\
+McNemar (acerto) & CoT $\times$ Fluxo de dados & 11/0 & $<$0,001 & 0,003 \\
+Friedman (concordância, 3 estratégias) & -- & 8,79 & 0,012 & -- \\
+Wilcoxon (concordância) & Zero-shot $\times$ CoT & 16,5 & 0,011 & 0,033 \\
+Wilcoxon (concordância) & Zero-shot $\times$ Fluxo de dados & 4,0 & 0,088 & 0,176 \\
+Wilcoxon (concordância) & CoT $\times$ Fluxo de dados & 64,5 & 0,208 & 0,208 \\
+McNemar (acerto) & Fluxo de dados $\times$ Fluxo de dados + \textit{skill} & 0/3 & 0,250 & -- \\
+Wilcoxon (concordância) & Fluxo de dados $\times$ Fluxo de dados + \textit{skill} & 4,0 & 0,336 & -- \\
+Mann-Whitney (V $\times$ NV) & Zero-shot & 1800,5 & 1,000 & 1,000 \\
+Mann-Whitney (V $\times$ NV) & CoT & 2012,5 & 0,039 & 0,078 \\
+Mann-Whitney (V $\times$ NV) & Fluxo de dados & 1980,0 & 0,013 & 0,050 \\
+Mann-Whitney (V $\times$ NV) & Fluxo de dados + \textit{skill} & 1950,0 & 0,023 & 0,070 \\
+\bottomrule
+\end{tabular}
+\end{table*}

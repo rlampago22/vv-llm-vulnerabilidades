@@ -13,6 +13,7 @@ espelham a Seção 4 do artigo: mudou um, mude o outro.
 | `coletar.py` | chamadas à API, log JSONL e parsing do veredito |
 | `parsing.py` | regra de parsing pré-registrada (válido x abstenção) |
 | `test_unidades.py` | testes do parsing e da anonimização |
+| `analisar.py` | métricas, estabilidade, testes de hipótese e tabelas da Seção 5 |
 
 ## Organização do repositório
 
@@ -26,9 +27,12 @@ experimento/
 ├── dados/                      gerado por preparar_amostra.py e versionado
 │   ├── amostra.csv             casos sorteados, rótulo, conjunto e sha256
 │   └── casos/                  código anonimizado exatamente como enviado
-└── resultados/                 gerado por coletar.py e versionado
-    ├── piloto.jsonl            não entra na análise
-    └── amostra.jsonl           uma linha por requisição
+├── resultados/                 gerado por coletar.py e versionado
+│   ├── piloto.jsonl            não entra na análise
+│   └── amostra.jsonl           uma linha por requisição
+└── analise/                    gerado por analisar.py e versionado
+    ├── resumo.json             todas as métricas e testes
+    └── tabelas.tex             tabelas prontas para o artigo
 ```
 
 Não são versionados: o clone do `BenchmarkJava/` (basta clonar de novo), o
@@ -124,6 +128,19 @@ A coleta é retomável. Se cair no meio, ou se alguma requisição falhar por er
 API depois das tentativas com backoff, rode o mesmo comando de novo: só o que
 falta é enviado.
 
+## 6. Análise
+
+```powershell
+python analisar.py
+```
+
+Não chama a API. Lê `resultados\amostra.jsonl` e grava `analise\resumo.json` e
+`analise\tabelas.tex`. As regras de agregação estão no topo do script; a única
+que o artigo não fixava antes da coleta é a do voto majoritário: empate (ou
+nenhuma execução válida) conta como erro. Na coleta registrada não houve empate.
+O bootstrap usa semente fixa (`SEMENTE_BOOTSTRAP`), então a saída é idêntica a
+cada execução.
+
 ## Formato do log (`resultados\<conjunto>.jsonl`)
 
 Uma linha por requisição, com o prompt completo, os parâmetros, a resposta bruta,
@@ -154,7 +171,7 @@ Na análise, use para cada `id` a linha com `status` válido, abstenção ou fil
 
 ## Custo e tempo
 
-2.400 chamadas com o `gpt-4.1-mini-2025-04-14` devem custar poucos dólares (confira
-o preço atual) e levam menos de uma hora com 4 requisições simultâneas
-(`--workers`). O snapshot tem desativação anunciada; faça a coleta bem antes dela
+A coleta registrada (2.400 chamadas com o `gpt-4.1-mini-2025-04-14`, 4 requisições
+simultâneas) levou 14 min 35 s e consumiu 2,29 M tokens de entrada e 0,30 M de
+saída, cerca de US$ 1,40 a preço de tabela. O snapshot tem desativação anunciada; faça a coleta bem antes dela
 e guarde a pasta `resultados\`.
