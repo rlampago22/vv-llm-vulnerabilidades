@@ -455,6 +455,222 @@
         }
       }
     },
+    "casos_por_mecanismo_e_cwe": {
+      "condicao_fixa | CWE-22": 7,
+      "condicao_fixa | CWE-78": 4,
+      "condicao_fixa | CWE-79": 2,
+      "condicao_fixa | CWE-89": 5,
+      "constante | CWE-22": 6,
+      "constante | CWE-78": 10,
+      "constante | CWE-79": 7,
+      "constante | CWE-89": 8,
+      "outro | CWE-22": 2,
+      "outro | CWE-78": 1,
+      "outro | CWE-79": 6,
+      "outro | CWE-89": 2
+    },
+    "fp_por_mecanismo_e_cwe": {
+      "zero_shot": {
+        "condicao_fixa | CWE-22": {
+          "fp": 15,
+          "execucoes": 35
+        },
+        "condicao_fixa | CWE-78": {
+          "fp": 15,
+          "execucoes": 20
+        },
+        "condicao_fixa | CWE-79": {
+          "fp": 10,
+          "execucoes": 10
+        },
+        "condicao_fixa | CWE-89": {
+          "fp": 13,
+          "execucoes": 25
+        },
+        "constante | CWE-22": {
+          "fp": 20,
+          "execucoes": 30
+        },
+        "constante | CWE-78": {
+          "fp": 20,
+          "execucoes": 50
+        },
+        "constante | CWE-79": {
+          "fp": 20,
+          "execucoes": 35
+        },
+        "constante | CWE-89": {
+          "fp": 15,
+          "execucoes": 40
+        },
+        "outro | CWE-22": {
+          "fp": 0,
+          "execucoes": 10
+        },
+        "outro | CWE-78": {
+          "fp": 0,
+          "execucoes": 5
+        },
+        "outro | CWE-79": {
+          "fp": 0,
+          "execucoes": 30
+        },
+        "outro | CWE-89": {
+          "fp": 5,
+          "execucoes": 10
+        }
+      },
+      "cot": {
+        "condicao_fixa | CWE-22": {
+          "fp": 11,
+          "execucoes": 35
+        },
+        "condicao_fixa | CWE-78": {
+          "fp": 9,
+          "execucoes": 20
+        },
+        "condicao_fixa | CWE-79": {
+          "fp": 7,
+          "execucoes": 10
+        },
+        "condicao_fixa | CWE-89": {
+          "fp": 3,
+          "execucoes": 25
+        },
+        "constante | CWE-22": {
+          "fp": 18,
+          "execucoes": 30
+        },
+        "constante | CWE-78": {
+          "fp": 20,
+          "execucoes": 50
+        },
+        "constante | CWE-79": {
+          "fp": 20,
+          "execucoes": 35
+        },
+        "constante | CWE-89": {
+          "fp": 14,
+          "execucoes": 39
+        },
+        "outro | CWE-22": {
+          "fp": 0,
+          "execucoes": 10
+        },
+        "outro | CWE-78": {
+          "fp": 0,
+          "execucoes": 5
+        },
+        "outro | CWE-79": {
+          "fp": 0,
+          "execucoes": 30
+        },
+        "outro | CWE-89": {
+          "fp": 0,
+          "execucoes": 10
+        }
+      },
+      "fluxo": {
+        "condicao_fixa | CWE-22": {
+          "fp": 18,
+          "execucoes": 35
+        },
+        "condicao_fixa | CWE-78": {
+          "fp": 15,
+          "execucoes": 20
+        },
+        "condicao_fixa | CWE-79": {
+          "fp": 10,
+          "execucoes": 10
+        },
+        "condicao_fixa | CWE-89": {
+          "fp": 21,
+          "execucoes": 25
+        },
+        "constante | CWE-22": {
+          "fp": 20,
+          "execucoes": 30
+        },
+        "constante | CWE-78": {
+          "fp": 24,
+          "execucoes": 50
+        },
+        "constante | CWE-79": {
+          "fp": 20,
+          "execucoes": 35
+        },
+        "constante | CWE-89": {
+          "fp": 13,
+          "execucoes": 38
+        },
+        "outro | CWE-22": {
+          "fp": 0,
+          "execucoes": 10
+        },
+        "outro | CWE-78": {
+          "fp": 1,
+          "execucoes": 5
+        },
+        "outro | CWE-79": {
+          "fp": 0,
+          "execucoes": 30
+        },
+        "outro | CWE-89": {
+          "fp": 5,
+          "execucoes": 6
+        }
+      },
+      "fluxo_skill": {
+        "condicao_fixa | CWE-22": {
+          "fp": 17,
+          "execucoes": 35
+        },
+        "condicao_fixa | CWE-78": {
+          "fp": 15,
+          "execucoes": 20
+        },
+        "condicao_fixa | CWE-79": {
+          "fp": 10,
+          "execucoes": 10
+        },
+        "condicao_fixa | CWE-89": {
+          "fp": 20,
+          "execucoes": 25
+        },
+        "constante | CWE-22": {
+          "fp": 20,
+          "execucoes": 30
+        },
+        "constante | CWE-78": {
+          "fp": 21,
+          "execucoes": 50
+        },
+        "constante | CWE-79": {
+          "fp": 20,
+          "execucoes": 35
+        },
+        "constante | CWE-89": {
+          "fp": 15,
+          "execucoes": 40
+        },
+        "outro | CWE-22": {
+          "fp": 0,
+          "execucoes": 10
+        },
+        "outro | CWE-78": {
+          "fp": 0,
+          "execucoes": 5
+        },
+        "outro | CWE-79": {
+          "fp": 0,
+          "execucoes": 30
+        },
+        "outro | CWE-89": {
+          "fp": 6,
+          "execucoes": 9
+        }
+      }
+    },
     "instaveis": {
       "zero_shot": {
         "total": 2,

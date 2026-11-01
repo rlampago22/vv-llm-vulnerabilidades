@@ -286,14 +286,20 @@ def exploratorio(rotulos: dict, casos: list[str], registros: list[dict],
     """Números citados nas Seções 5.3 a 5.5, fora dos testes pré-especificados."""
     nao_vuln = [caso for caso in casos if rotulos[caso] != VULN]
     grupos = {caso: mecanismo(caso) for caso in nao_vuln}
-    fp_por_mecanismo, contagens = {}, {}
+    cwe = {r["caso"]: r["cwe"] for r in registros}
+    fp_por_mecanismo, contagens, cruzadas = {}, {}, {}
     for c in CONDICOES:
-        n, fp = Counter(), Counter()
+        n, fp, n_cwe, fp_cwe = Counter(), Counter(), Counter(), Counter()
         for caso in nao_vuln:
+            celula = f"{grupos[caso]} | CWE-{cwe[caso]}"
             n[grupos[caso]] += len(vereditos[c][caso])
             fp[grupos[caso]] += vereditos[c][caso].count(VULN)
+            n_cwe[celula] += len(vereditos[c][caso])
+            fp_cwe[celula] += vereditos[c][caso].count(VULN)
         fp_por_mecanismo[c] = {g: fp[g] / n[g] for g in sorted(n)}
         contagens[c] = {g: {"fp": fp[g], "execucoes": n[g]} for g in sorted(n)}
+        # Pedido da segunda revisão: separa o efeito do mecanismo do efeito da CWE.
+        cruzadas[c] = {g: {"fp": fp_cwe[g], "execucoes": n_cwe[g]} for g in sorted(n_cwe)}
     instaveis = {c: [caso for caso in casos if len(set(vereditos[c][caso])) > 1]
                  for c in CONDICOES}
     contagem = Counter(caso for lista in instaveis.values() for caso in lista)
@@ -306,6 +312,9 @@ def exploratorio(rotulos: dict, casos: list[str], registros: list[dict],
         "casos_por_mecanismo": dict(Counter(grupos.values())),
         "taxa_fp_por_mecanismo": fp_por_mecanismo,
         "fp_por_mecanismo": contagens,
+        "casos_por_mecanismo_e_cwe": dict(sorted(Counter(
+            f"{grupos[caso]} | CWE-{cwe[caso]}" for caso in nao_vuln).items())),
+        "fp_por_mecanismo_e_cwe": cruzadas,
         "instaveis": {c: {"total": len(v), "nao_vulneraveis":
                           sum(rotulos[caso] != VULN for caso in v)}
                       for c, v in instaveis.items()},
