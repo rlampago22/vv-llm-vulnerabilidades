@@ -316,13 +316,16 @@ def pct(x):
 
 
 def com_ic(valor, ic):
-    return f"{num(valor, 2)} ({num(ic[0], 2)}--{num(ic[1], 2)})"
+    return f"{num(valor)} ({num(ic[0])}--{num(ic[1])})"
 
 
 def valor_p(p):
     if p is None:
         return "--"
-    return "$<$0,001" if p < 0.001 else num(p)
+    if p < 0.001:
+        return "$<$0,001"
+    # Um p acima de ALFA não pode ser arredondado para o próprio ALFA.
+    return num(p, 4) if round(p, 3) == ALFA and p > ALFA else num(p)
 
 
 def tabelas_latex(res: dict) -> str:
@@ -337,8 +340,9 @@ def tabelas_latex(res: dict) -> str:
             num(d["f1_efetivo"])]) + " \\\\")
     desempenho = "\n".join([
         "\\begin{table*}[t]",
-        "\\caption{Desempenho por condição, por execução (600 execuções por condição). "
-        "Entre parênteses, IC de 95\\% por \\textit{bootstrap} reamostrando casos.}",
+        "\\caption{Desempenho por condição, sobre as execuções válidas (600 execuções por "
+        "condição, menos as abstenções). Entre parênteses, IC de 95\\% por \\textit{bootstrap} "
+        "reamostrando casos.}",
         "\\label{tab:desempenho}",
         "\\small",
         "\\begin{tabular}{lrrrrcccrcc}",
