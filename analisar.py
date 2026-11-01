@@ -20,6 +20,7 @@ Regras de agregação:
 
 import csv
 import json
+import re
 import sys
 from collections import Counter
 from itertools import combinations
@@ -36,6 +37,11 @@ NOMES = {"zero_shot": "Zero-shot", "cot": "CoT", "fluxo": "Fluxo de dados",
          "fluxo_skill": "Fluxo de dados + \\textit{skill}"}
 FINAIS = ("valido", "abstencao", "filtro")
 VULN = "VULNERAVEL"
+
+# Análise exploratória pós-coleta (Seção 5.5): mecanismo com que o benchmark
+# neutraliza o fluxo nos casos não vulneráveis, reconhecido por padrões textuais.
+_RE_CONSTANTE = re.compile(r'"(item|moreitem|alsoitem|item!)"|ItemStuff')
+_RE_CONDICAO_FIXA = re.compile(r"switchTarget|\(7 \* 42\)|num \* 42|\(500 / 42\)")
 
 
 # ---------------------------------------------------------------- leitura
@@ -254,7 +260,49 @@ def analisar() -> dict:
         mw[c]["p_holm"] = p_holm
     t["mannwhitney_concordancia_por_rotulo"] = mw
     t["alfa"] = ALFA
+    resultado["exploratorio"] = exploratorio(rotulos, casos, registros, vereditos)
     return resultado
+
+
+def mecanismo(caso: str) -> str:
+    with ARQ_AMOSTRA.open(encoding="utf-8") as f:
+        arquivo = next(c["arquivo"] for c in csv.DictReader(f) if c["caso"] == caso)
+    codigo = (ARQ_AMOSTRA.parent / arquivo).read_text(encoding="utf-8")
+    if _RE_CONSTANTE.search(codigo):
+        return "constante"
+    return "condicao_fixa" if _RE_CONDICAO_FIXA.search(codigo) else "outro"
+
+
+def exploratorio(rotulos: dict, casos: list[str], registros: list[dict],
+                 vereditos: dict) -> dict:
+    """Números citados nas Seções 5.3 a 5.5, fora dos testes pré-especificados."""
+    nao_vuln = [caso for caso in casos if rotulos[caso] != VULN]
+    grupos = {caso: mecanismo(caso) for caso in nao_vuln}
+    fp_por_mecanismo = {}
+    for c in CONDICOES:
+        n, fp = Counter(), Counter()
+        for caso in nao_vuln:
+            n[grupos[caso]] += len(vereditos[c][caso])
+            fp[grupos[caso]] += vereditos[c][caso].count(VULN)
+        fp_por_mecanismo[c] = {g: fp[g] / n[g] for g in sorted(n)}
+    instaveis = {c: [caso for caso in casos if len(set(vereditos[c][caso])) > 1]
+                 for c in CONDICOES}
+    contagem = Counter(caso for lista in instaveis.values() for caso in lista)
+    tokens = {c: {"entrada": media([r["uso"]["prompt_tokens"] for r in registros
+                                    if r["condicao"] == c and r["status"] == "valido"]),
+                  "saida": media([r["uso"]["completion_tokens"] for r in registros
+                                  if r["condicao"] == c and r["status"] == "valido"])}
+              for c in CONDICOES}
+    return {
+        "casos_por_mecanismo": dict(Counter(grupos.values())),
+        "taxa_fp_por_mecanismo": fp_por_mecanismo,
+        "instaveis": {c: {"total": len(v), "nao_vulneraveis":
+                          sum(rotulos[caso] != VULN for caso in v)}
+                      for c, v in instaveis.items()},
+        "casos_instaveis_em_alguma_condicao": len(contagem),
+        "casos_instaveis_em_2_ou_mais": sum(n >= 2 for n in contagem.values()),
+        "tokens_medios": tokens,
+    }
 
 
 # ---------------------------------------------------------------- saída
@@ -377,6 +425,8 @@ def imprimir(res: dict) -> None:
         print(f"  por fingerprint={d['por_fingerprint']}")
     print("\n== testes")
     print(json.dumps(res["testes"], indent=2, ensure_ascii=False))
+    print("\n== exploratório (pós-coleta)")
+    print(json.dumps(res["exploratorio"], indent=2, ensure_ascii=False))
 
 
 def main() -> None:

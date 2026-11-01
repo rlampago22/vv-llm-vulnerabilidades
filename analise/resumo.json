@@ -368,5 +368,72 @@
       }
     },
     "alfa": 0.05
+  },
+  "exploratorio": {
+    "casos_por_mecanismo": {
+      "constante": 31,
+      "outro": 11,
+      "condicao_fixa": 18
+    },
+    "taxa_fp_por_mecanismo": {
+      "zero_shot": {
+        "condicao_fixa": 0.5888888888888889,
+        "constante": 0.4838709677419355,
+        "outro": 0.09090909090909091
+      },
+      "cot": {
+        "condicao_fixa": 0.3333333333333333,
+        "constante": 0.4675324675324675,
+        "outro": 0.0
+      },
+      "fluxo": {
+        "condicao_fixa": 0.7111111111111111,
+        "constante": 0.5032679738562091,
+        "outro": 0.11764705882352941
+      },
+      "fluxo_skill": {
+        "condicao_fixa": 0.6888888888888889,
+        "constante": 0.49032258064516127,
+        "outro": 0.1111111111111111
+      }
+    },
+    "instaveis": {
+      "zero_shot": {
+        "total": 2,
+        "nao_vulneraveis": 1
+      },
+      "cot": {
+        "total": 13,
+        "nao_vulneraveis": 10
+      },
+      "fluxo": {
+        "total": 6,
+        "nao_vulneraveis": 6
+      },
+      "fluxo_skill": {
+        "total": 5,
+        "nao_vulneraveis": 5
+      }
+    },
+    "casos_instaveis_em_alguma_condicao": 21,
+    "casos_instaveis_em_2_ou_mais": 4,
+    "tokens_medios": {
+      "zero_shot": {
+        "entrada": 601.5333333333333,
+        "saida": 17.56
+      },
+      "cot": {
+        "entrada": 606.5125208681135,
+        "saida": 195.0534223706177
+      },
+      "fluxo": {
+        "entrada": 635.8513513513514,
+        "saida": 134.3158783783784
+      },
+      "fluxo_skill": {
+        "entrada": 1972.3606010016695,
+        "saida": 145.29048414023373
+      }
+    }
   }
 }
