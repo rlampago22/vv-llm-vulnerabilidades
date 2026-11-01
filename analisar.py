@@ -499,51 +499,43 @@ def tabelas_latex(res: dict) -> str:
         "\\toprule",
         "Teste & Comparação & Estatística & $p$ & $p$ (Holm) \\\\",
         "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
+    # Medidas complementares e contagens por mecanismo numa só tabela, para caber
+    # no limite de páginas do artigo.
     comp = res["complementar"]
+    exp = res["exploratorio"]
     cwes = sorted(next(iter(comp["por_condicao"].values()))["fp_por_cwe"])
+    grupos = [("constante", "Constante"), ("condicao_fixa", "Cond. fixa"), ("outro", "Demais")]
     linhas = []
     for c in CONDICOES:
         d = comp["por_condicao"][c]
+        m = exp["fp_por_mecanismo"][c]
         linhas.append(" & ".join([
             NOMES[c], num(d["especificidade"]), num(d["mcc"]), num(d["precisao_na_prevalencia"]),
-            *(str(d["fp_por_cwe"][w]) for w in cwes)]) + " \\\\")
+            *(str(d["fp_por_cwe"][w]) for w in cwes),
+            *(f"{m[g]['fp']}/{m[g]['execucoes']}" for g, _ in grupos)]) + " \\\\")
     prevalencia = f"{100 * comp['prevalencia_triagem']:.0f}\\%"
+    n_cwe, n_mec = len(cwes), len(grupos)
     complementares = "\n".join([
         "\\begin{table*}[t]",
-        "\\caption{Medidas complementares, definidas após a coleta, por execução válida. "
-        f"Precisão estimada para uma prevalência de {prevalencia} de casos vulneráveis, "
-        "mantidas a revocação e a especificidade observadas.}",
+        "\\caption{Medidas complementares e exploratórias, definidas após a coleta, por execução "
+        f"válida. Precisão estimada para uma prevalência de {prevalencia} de casos vulneráveis, "
+        "mantidas a revocação e a especificidade observadas. Por mecanismo: falsos positivos "
+        "sobre execuções nos casos não vulneráveis, agrupados pelo mecanismo que neutraliza o "
+        "fluxo (entre parênteses, o número de casos).}",
         "\\label{tab:complementar}",
         "\\small",
-        "\\begin{tabular}{lccc" + "r" * len(cwes) + "}",
+        "\\setlength{\\tabcolsep}{4pt}",
+        "\\begin{tabular}{lccc" + "r" * n_cwe + "c" * n_mec + "}",
         "\\toprule",
-        " & & & & \\multicolumn{" + str(len(cwes)) + "}{c}{Falsos positivos por CWE} \\\\",
-        "\\cmidrule(lr){5-" + str(4 + len(cwes)) + "}",
+        f" & & & & \\multicolumn{{{n_cwe}}}{{c}}{{Falsos positivos por CWE}} & "
+        f"\\multicolumn{{{n_mec}}}{{c}}{{Falsos positivos por mecanismo}} \\\\",
+        f"\\cmidrule(lr){{5-{4 + n_cwe}}}\\cmidrule(lr){{{5 + n_cwe}-{4 + n_cwe + n_mec}}}",
         f"Condição & Especificidade & MCC & Precisão ({prevalencia}) & "
-        + " & ".join(f"CWE-{w}" for w in cwes) + " \\\\",
+        + " & ".join(f"CWE-{w}" for w in cwes) + " & "
+        + " & ".join(f"{nome} ({exp['casos_por_mecanismo'][g]})" for g, nome in grupos)
+        + " \\\\",
         "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
-
-    exp = res["exploratorio"]
-    grupos = [("constante", "Constante"), ("condicao_fixa", "Condição fixa"), ("outro", "Demais")]
-    linhas = []
-    for c in CONDICOES:
-        d = exp["fp_por_mecanismo"][c]
-        linhas.append(" & ".join([NOMES[c], *(f"{d[g]['fp']}/{d[g]['execucoes']}"
-                                              for g, _ in grupos)]) + " \\\\")
-    mecanismos = "\n".join([
-        "\\begin{table}[t]",
-        "\\caption{Falsos positivos por execuções válidas nos casos não vulneráveis, "
-        "agrupados após a coleta pelo mecanismo que neutraliza o fluxo (entre parênteses, "
-        "o número de casos).}",
-        "\\label{tab:mecanismos}",
-        "\\small",
-        "\\setlength{\\tabcolsep}{3pt}",
-        "\\begin{tabular}{lccc}",
-        "\\toprule",
-        "Condição & " + " & ".join(f"{nome} ({exp['casos_por_mecanismo'][g]})"
-                                    for g, nome in grupos) + " \\\\",
-        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table}"])
-    return "\n\n".join([desempenho, estabilidade, testes, complementares, mecanismos]) + "\n"
+    return "\n\n".join([desempenho, estabilidade, testes, complementares]) + "\n"
 
 
 def imprimir(res: dict) -> None:

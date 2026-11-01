@@ -60,36 +60,20 @@ Mann-Whitney (V $\times$ NV) & Fluxo de dados + \textit{skill} & 1950,0 & 0,023 
 \end{table*}
 
 \begin{table*}[t]
-\caption{Medidas complementares, definidas após a coleta, por execução válida. Precisão estimada para uma prevalência de 10\% de casos vulneráveis, mantidas a revocação e a especificidade observadas.}
+\caption{Medidas complementares e exploratórias, definidas após a coleta, por execução válida. Precisão estimada para uma prevalência de 10\% de casos vulneráveis, mantidas a revocação e a especificidade observadas. Por mecanismo: falsos positivos sobre execuções nos casos não vulneráveis, agrupados pelo mecanismo que neutraliza o fluxo (entre parênteses, o número de casos).}
 \label{tab:complementar}
 \small
-\begin{tabular}{lcccrrrr}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccrrrrccc}
 \toprule
- & & & & \multicolumn{4}{c}{Falsos positivos por CWE} \\
-\cmidrule(lr){5-8}
-Condição & Especificidade & MCC & Precisão (10\%) & CWE-22 & CWE-78 & CWE-79 & CWE-89 \\
+ & & & & \multicolumn{4}{c}{Falsos positivos por CWE} & \multicolumn{3}{c}{Falsos positivos por mecanismo} \\
+\cmidrule(lr){5-8}\cmidrule(lr){9-11}
+Condição & Especificidade & MCC & Precisão (10\%) & CWE-22 & CWE-78 & CWE-79 & CWE-89 & Constante (31) & Cond. fixa (18) & Demais (11) \\
 \midrule
-Zero-shot & 0,557 & 0,616 & 0,200 & 35 & 35 & 30 & 33 \\
-CoT & 0,659 & 0,684 & 0,243 & 29 & 29 & 27 & 17 \\
-Fluxo de dados & 0,500 & 0,579 & 0,182 & 38 & 40 & 30 & 39 \\
-Fluxo de dados + \textit{skill} & 0,518 & 0,592 & 0,187 & 37 & 36 & 30 & 41 \\
+Zero-shot & 0,557 & 0,616 & 0,200 & 35 & 35 & 30 & 33 & 75/155 & 53/90 & 5/55 \\
+CoT & 0,659 & 0,684 & 0,243 & 29 & 29 & 27 & 17 & 72/154 & 30/90 & 0/55 \\
+Fluxo de dados & 0,500 & 0,579 & 0,182 & 38 & 40 & 30 & 39 & 77/153 & 64/90 & 6/51 \\
+Fluxo de dados + \textit{skill} & 0,518 & 0,592 & 0,187 & 37 & 36 & 30 & 41 & 76/155 & 62/90 & 6/54 \\
 \bottomrule
 \end{tabular}
 \end{table*}
-
-\begin{table}[t]
-\caption{Falsos positivos por execuções válidas nos casos não vulneráveis, agrupados após a coleta pelo mecanismo que neutraliza o fluxo (entre parênteses, o número de casos).}
-\label{tab:mecanismos}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lccc}
-\toprule
-Condição & Constante (31) & Condição fixa (18) & Demais (11) \\
-\midrule
-Zero-shot & 75/155 & 53/90 & 5/55 \\
-CoT & 72/154 & 30/90 & 0/55 \\
-Fluxo de dados & 77/153 & 64/90 & 6/51 \\
-Fluxo de dados + \textit{skill} & 76/155 & 62/90 & 6/54 \\
-\bottomrule
-\end{tabular}
-\end{table}
