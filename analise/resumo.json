@@ -397,6 +397,64 @@
         "outro": 0.1111111111111111
       }
     },
+    "fp_por_mecanismo": {
+      "zero_shot": {
+        "condicao_fixa": {
+          "fp": 53,
+          "execucoes": 90
+        },
+        "constante": {
+          "fp": 75,
+          "execucoes": 155
+        },
+        "outro": {
+          "fp": 5,
+          "execucoes": 55
+        }
+      },
+      "cot": {
+        "condicao_fixa": {
+          "fp": 30,
+          "execucoes": 90
+        },
+        "constante": {
+          "fp": 72,
+          "execucoes": 154
+        },
+        "outro": {
+          "fp": 0,
+          "execucoes": 55
+        }
+      },
+      "fluxo": {
+        "condicao_fixa": {
+          "fp": 64,
+          "execucoes": 90
+        },
+        "constante": {
+          "fp": 77,
+          "execucoes": 153
+        },
+        "outro": {
+          "fp": 6,
+          "execucoes": 51
+        }
+      },
+      "fluxo_skill": {
+        "condicao_fixa": {
+          "fp": 62,
+          "execucoes": 90
+        },
+        "constante": {
+          "fp": 76,
+          "execucoes": 155
+        },
+        "outro": {
+          "fp": 6,
+          "execucoes": 54
+        }
+      }
+    },
     "instaveis": {
       "zero_shot": {
         "total": 2,
@@ -434,6 +492,106 @@
         "entrada": 1972.3606010016695,
         "saida": 145.29048414023373
       }
+    }
+  },
+  "complementar": {
+    "prevalencia_triagem": 0.1,
+    "por_condicao": {
+      "zero_shot": {
+        "especificidade": 0.5566666666666666,
+        "mcc": 0.6161856410758674,
+        "precisao_na_prevalencia": 0.19986631016042783,
+        "fp_por_cwe": {
+          "22": 35,
+          "78": 35,
+          "79": 30,
+          "89": 33
+        }
+      },
+      "cot": {
+        "especificidade": 0.6588628762541806,
+        "mcc": 0.6835539220246031,
+        "precisao_na_prevalencia": 0.2432069996482589,
+        "fp_por_cwe": {
+          "22": 29,
+          "78": 29,
+          "79": 27,
+          "89": 17
+        }
+      },
+      "fluxo": {
+        "especificidade": 0.5,
+        "mcc": 0.5786462310204373,
+        "precisao_na_prevalencia": 0.18181818181818182,
+        "fp_por_cwe": {
+          "22": 38,
+          "78": 40,
+          "79": 30,
+          "89": 39
+        }
+      },
+      "fluxo_skill": {
+        "especificidade": 0.5183946488294314,
+        "mcc": 0.5918332996836868,
+        "precisao_na_prevalencia": 0.18746081504702197,
+        "fp_por_cwe": {
+          "22": 37,
+          "78": 36,
+          "79": 30,
+          "89": 41
+        }
+      }
+    },
+    "diferenca_f1_pareada": {
+      "cot - zero_shot": {
+        "diferenca": 0.03119764510623635,
+        "ic95": [
+          0.00931529834553231,
+          0.05647234142365089
+        ]
+      },
+      "fluxo - zero_shot": {
+        "diferenca": -0.014786458678081038,
+        "ic95": [
+          -0.03693232849118897,
+          0.004112462963605799
+        ]
+      },
+      "fluxo - cot": {
+        "diferenca": -0.04598410378431739,
+        "ic95": [
+          -0.07599425159909277,
+          -0.019299112560053823
+        ]
+      },
+      "fluxo_skill - fluxo": {
+        "diferenca": 0.004298180870924262,
+        "ic95": [
+          -0.005080859543057356,
+          0.013539492018703747
+        ]
+      }
+    },
+    "padroes_acerto": {
+      "ordem": [
+        "zero_shot",
+        "cot",
+        "fluxo"
+      ],
+      "contagens": {
+        "000": 20,
+        "010": 6,
+        "011": 1,
+        "110": 5,
+        "111": 88
+      }
+    },
+    "fingerprint_x_rotulo": {
+      "pares_instaveis": 26,
+      "rotulo_separado_por_fingerprint": 2,
+      "estatistica": 34,
+      "esperado": 32.20135,
+      "p": 0.20925
     }
   }
 }

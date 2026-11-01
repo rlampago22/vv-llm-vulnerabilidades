@@ -16,6 +16,11 @@ Regras de agregação:
   nenhuma execução válida, conta como erro (regra conservadora); o número de
   empates é reportado.
 - Concordância por pares só com K >= 2 execuções válidas; senão, indefinida.
+
+As chaves "exploratorio" e "complementar" do resumo ficam fora dos testes
+pré-especificados: a primeira foi definida após a coleta; a segunda, após as
+revisões do artigo (especificidade, MCC, diferenças pareadas de F1, quebra por
+CWE e associação entre rótulo e system_fingerprint).
 """
 
 import csv
@@ -29,7 +34,8 @@ import numpy as np
 from scipy import stats
 
 from config import (ALFA, ARQ_AMOSTRA, DIR_ANALISE, DIR_RESULTADOS, K_REPETICOES,
-                    N_BOOTSTRAP, SEMENTE_BOOTSTRAP)
+                    N_BOOTSTRAP, N_PERMUTACOES, PREVALENCIA_TRIAGEM, SEMENTE_BOOTSTRAP,
+                    SEMENTE_PERMUTACAO)
 from prompts import CONDICOES
 
 ESTRATEGIAS = ("zero_shot", "cot", "fluxo")
@@ -191,9 +197,9 @@ def analisar() -> dict:
 
     resultado = {"n_casos": len(casos), "k": K_REPETICOES, "n_bootstrap": N_BOOTSTRAP,
                  "condicoes": {}, "testes": {}}
-    acertos, concs = {}, {}
+    acertos, concs, matrizes = {}, {}, {}
     for c in CONDICOES:
-        m = matriz_por_caso(vereditos[c], rotulos, casos)
+        m = matrizes[c] = matriz_por_caso(vereditos[c], rotulos, casos)
         tp, fp, fn, tn = (int(v) for v in m.sum(axis=0))
         p, r, f1 = prf(tp, fp, fn)
         total = sum(status[c].values())
@@ -261,6 +267,8 @@ def analisar() -> dict:
     t["mannwhitney_concordancia_por_rotulo"] = mw
     t["alfa"] = ALFA
     resultado["exploratorio"] = exploratorio(rotulos, casos, registros, vereditos)
+    resultado["complementar"] = complementar(rotulos, casos, registros, matrizes,
+                                             acertos, concs, indices)
     return resultado
 
 
@@ -278,13 +286,14 @@ def exploratorio(rotulos: dict, casos: list[str], registros: list[dict],
     """Números citados nas Seções 5.3 a 5.5, fora dos testes pré-especificados."""
     nao_vuln = [caso for caso in casos if rotulos[caso] != VULN]
     grupos = {caso: mecanismo(caso) for caso in nao_vuln}
-    fp_por_mecanismo = {}
+    fp_por_mecanismo, contagens = {}, {}
     for c in CONDICOES:
         n, fp = Counter(), Counter()
         for caso in nao_vuln:
             n[grupos[caso]] += len(vereditos[c][caso])
             fp[grupos[caso]] += vereditos[c][caso].count(VULN)
         fp_por_mecanismo[c] = {g: fp[g] / n[g] for g in sorted(n)}
+        contagens[c] = {g: {"fp": fp[g], "execucoes": n[g]} for g in sorted(n)}
     instaveis = {c: [caso for caso in casos if len(set(vereditos[c][caso])) > 1]
                  for c in CONDICOES}
     contagem = Counter(caso for lista in instaveis.values() for caso in lista)
@@ -296,12 +305,85 @@ def exploratorio(rotulos: dict, casos: list[str], registros: list[dict],
     return {
         "casos_por_mecanismo": dict(Counter(grupos.values())),
         "taxa_fp_por_mecanismo": fp_por_mecanismo,
+        "fp_por_mecanismo": contagens,
         "instaveis": {c: {"total": len(v), "nao_vulneraveis":
                           sum(rotulos[caso] != VULN for caso in v)}
                       for c, v in instaveis.items()},
         "casos_instaveis_em_alguma_condicao": len(contagem),
         "casos_instaveis_em_2_ou_mais": sum(n >= 2 for n in contagem.values()),
         "tokens_medios": tokens,
+    }
+
+
+def teste_fingerprint(registros: list[dict], concs: dict) -> dict:
+    """Nos pares (caso, condição) instáveis, o rótulo se associa ao system_fingerprint?
+    Permutação dos fingerprints dentro de cada par; estatística: respostas
+    VULNERAVEL no primeiro fingerprint."""
+    respostas = {}
+    for r in registros:
+        if r["status"] == "valido" and concs[r["condicao"]][r["caso"]] not in (None, 1):
+            respostas.setdefault((r["caso"], r["condicao"]), []).append(
+                (r["veredito"], r.get("system_fingerprint")))
+    if not respostas:
+        return {"pares_instaveis": 0, "p": None}
+    alvo = sorted({f for rs in respostas.values() for _, f in rs})[0]
+    vereditos = [np.array([v == VULN for v, _ in rs]) for rs in respostas.values()]
+    no_alvo = [np.array([f == alvo for _, f in rs]) for rs in respostas.values()]
+    observado = sum(int((v & f).sum()) for v, f in zip(vereditos, no_alvo))
+    rng = np.random.default_rng(SEMENTE_PERMUTACAO)
+    nulos = np.array([sum(int((v & rng.permutation(f)).sum()) for v, f in zip(vereditos, no_alvo))
+                      for _ in range(N_PERMUTACOES)])
+    centro = nulos.mean()
+    separados = sum(len({f for _, f in rs}) > 1 and
+                    all(len({v for v, f in rs if f == g}) == 1 for g in {f for _, f in rs})
+                    for rs in respostas.values())
+    return {"pares_instaveis": len(respostas), "rotulo_separado_por_fingerprint": separados,
+            "estatistica": observado, "esperado": float(centro),
+            "p": float((np.abs(nulos - centro) >= abs(observado - centro)).mean())}
+
+
+def complementar(rotulos: dict, casos: list[str], registros: list[dict], matrizes: dict,
+                 acertos: dict, concs: dict, indices: np.ndarray) -> dict:
+    """Números citados nas Seções 5.1, 5.2 e 5.5, definidos após a coleta."""
+    cwe = {r["caso"]: r["cwe"] for r in registros}
+    por_condicao = {}
+    for c in CONDICOES:
+        tp, fp, fn, tn = (int(v) for v in matrizes[c].sum(axis=0))
+        sens, esp = razao(tp, tp + fn), razao(tn, tn + fp)
+        den = ((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)) ** 0.5
+        q = PREVALENCIA_TRIAGEM
+        por_condicao[c] = {
+            "especificidade": esp,
+            "mcc": razao(tp * tn - fp * fn, den),
+            "precisao_na_prevalencia": razao(q * sens, q * sens + (1 - q) * (1 - esp)),
+            "fp_por_cwe": {w: int(sum(matrizes[c][i, 1] for i, caso in enumerate(casos)
+                                      if cwe[caso] == w))
+                           for w in sorted(set(cwe.values()))},
+        }
+
+    def f1_bootstrap(c):
+        tp, fp, fn, _ = matrizes[c][indices].sum(axis=1).T.astype(float)
+        return 2 * tp / (2 * tp + fp + fn)
+
+    def f1(c):
+        tp, fp, fn, _ = matrizes[c].sum(axis=0)
+        return 2 * tp / (2 * tp + fp + fn)
+
+    diferencas = {}
+    for a, b in [*combinations(ESTRATEGIAS, 2), ("fluxo", "fluxo_skill")]:
+        d = f1_bootstrap(b) - f1_bootstrap(a)
+        diferencas[f"{b} - {a}"] = {"diferenca": float(f1(b) - f1(a)),
+                                    "ic95": [float(np.percentile(d, 2.5)),
+                                             float(np.percentile(d, 97.5))]}
+
+    padroes = Counter("".join(str(int(acertos[c][i])) for c in ESTRATEGIAS)
+                      for i in range(len(casos)))
+    return {
+        "prevalencia_triagem": PREVALENCIA_TRIAGEM,
+        "por_condicao": por_condicao,
+        "diferenca_f1_pareada": diferencas,
+        "padroes_acerto": {"ordem": list(ESTRATEGIAS), "contagens": dict(sorted(padroes.items()))},
+        "fingerprint_x_rotulo": teste_fingerprint(registros, concs),
     }
 
 
@@ -408,7 +490,51 @@ def tabelas_latex(res: dict) -> str:
         "\\toprule",
         "Teste & Comparação & Estatística & $p$ & $p$ (Holm) \\\\",
         "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
-    return "\n\n".join([desempenho, estabilidade, testes]) + "\n"
+    comp = res["complementar"]
+    cwes = sorted(next(iter(comp["por_condicao"].values()))["fp_por_cwe"])
+    linhas = []
+    for c in CONDICOES:
+        d = comp["por_condicao"][c]
+        linhas.append(" & ".join([
+            NOMES[c], num(d["especificidade"]), num(d["mcc"]), num(d["precisao_na_prevalencia"]),
+            *(str(d["fp_por_cwe"][w]) for w in cwes)]) + " \\\\")
+    prevalencia = f"{100 * comp['prevalencia_triagem']:.0f}\\%"
+    complementares = "\n".join([
+        "\\begin{table*}[t]",
+        "\\caption{Medidas complementares, definidas após a coleta, por execução válida. "
+        f"Precisão estimada para uma prevalência de {prevalencia} de casos vulneráveis, "
+        "mantidas a revocação e a especificidade observadas.}",
+        "\\label{tab:complementar}",
+        "\\small",
+        "\\begin{tabular}{lccc" + "r" * len(cwes) + "}",
+        "\\toprule",
+        " & & & & \\multicolumn{" + str(len(cwes)) + "}{c}{Falsos positivos por CWE} \\\\",
+        "\\cmidrule(lr){5-" + str(4 + len(cwes)) + "}",
+        f"Condição & Especificidade & MCC & Precisão ({prevalencia}) & "
+        + " & ".join(f"CWE-{w}" for w in cwes) + " \\\\",
+        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table*}"])
+
+    exp = res["exploratorio"]
+    grupos = [("constante", "Constante"), ("condicao_fixa", "Condição fixa"), ("outro", "Demais")]
+    linhas = []
+    for c in CONDICOES:
+        d = exp["fp_por_mecanismo"][c]
+        linhas.append(" & ".join([NOMES[c], *(f"{d[g]['fp']}/{d[g]['execucoes']}"
+                                              for g, _ in grupos)]) + " \\\\")
+    mecanismos = "\n".join([
+        "\\begin{table}[t]",
+        "\\caption{Falsos positivos por execuções válidas nos casos não vulneráveis, "
+        "agrupados após a coleta pelo mecanismo que neutraliza o fluxo (entre parênteses, "
+        "o número de casos).}",
+        "\\label{tab:mecanismos}",
+        "\\small",
+        "\\setlength{\\tabcolsep}{3pt}",
+        "\\begin{tabular}{lccc}",
+        "\\toprule",
+        "Condição & " + " & ".join(f"{nome} ({exp['casos_por_mecanismo'][g]})"
+                                    for g, nome in grupos) + " \\\\",
+        "\\midrule", *linhas, "\\bottomrule", "\\end{tabular}", "\\end{table}"])
+    return "\n\n".join([desempenho, estabilidade, testes, complementares, mecanismos]) + "\n"
 
 
 def imprimir(res: dict) -> None:

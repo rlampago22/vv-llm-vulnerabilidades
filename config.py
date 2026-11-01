@@ -52,3 +52,8 @@ DIR_ANALISE = RAIZ / "analise"
 SEMENTE_BOOTSTRAP = 20261101
 N_BOOTSTRAP = 10_000
 ALFA = 0.05
+
+# Análises complementares definidas após a coleta (Seções 5.1, 5.2 e 5.5).
+SEMENTE_PERMUTACAO = 20261102
+N_PERMUTACOES = 20_000
+PREVALENCIA_TRIAGEM = 0.10

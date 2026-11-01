@@ -141,6 +141,13 @@ nenhuma execução válida) conta como erro. Na coleta registrada não houve emp
 O bootstrap usa semente fixa (`SEMENTE_BOOTSTRAP`), então a saída é idêntica a
 cada execução.
 
+Ficam fora dos testes pré-especificados as chaves `exploratorio` (mecanismos de
+neutralização, Seção 5.5) e `complementar` do `resumo.json`: especificidade, MCC,
+precisão sob prevalência de 10%, diferenças pareadas de F1, falsos positivos por
+CWE e o teste de permutação entre rótulo e `system_fingerprint`. Foram definidas
+depois da coleta, a partir das revisões do artigo; o teste de permutação usa
+`SEMENTE_PERMUTACAO`.
+
 ## Formato do log (`resultados\<conjunto>.jsonl`)
 
 Uma linha por requisição, com o prompt completo, os parâmetros, a resposta bruta,
