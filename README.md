@@ -3,6 +3,10 @@
 Código de coleta do artigo. Os parâmetros em `config.py` e os textos em `prompts.py`
 espelham a Seção 4 do artigo: mudou um, mude o outro.
 
+![Fluxo do experimento: scripts Python locais, chamadas ao GPT-4.1-mini no Azure OpenAI e análise](docs/fluxo-experimento.png)
+
+*Fluxo do experimento: as etapas 1 a 4 e 6 a 8 rodam localmente em Python; a etapa 5 é a chamada ao GPT-4.1-mini implantado no Azure OpenAI.*
+
 | Arquivo | Função |
 |---|---|
 | `config.py` | caminhos, sementes, CWEs, modelo e parâmetros de decodificação |
