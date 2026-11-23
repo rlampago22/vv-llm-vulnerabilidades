@@ -716,6 +716,7 @@
       "zero_shot": {
         "especificidade": 0.5566666666666666,
         "mcc": 0.6161856410758674,
+        "tpr_menos_fpr": 0.5533333333333332,
         "precisao_na_prevalencia": 0.19986631016042783,
         "fp_por_cwe": {
           "22": 35,
@@ -727,6 +728,7 @@
       "cot": {
         "especificidade": 0.6588628762541806,
         "mcc": 0.6835539220246031,
+        "tpr_menos_fpr": 0.6455295429208472,
         "precisao_na_prevalencia": 0.2432069996482589,
         "fp_por_cwe": {
           "22": 29,
@@ -738,6 +740,7 @@
       "fluxo": {
         "especificidade": 0.5,
         "mcc": 0.5786462310204373,
+        "tpr_menos_fpr": 0.5,
         "precisao_na_prevalencia": 0.18181818181818182,
         "fp_por_cwe": {
           "22": 38,
@@ -749,6 +752,7 @@
       "fluxo_skill": {
         "especificidade": 0.5183946488294314,
         "mcc": 0.5918332996836868,
+        "tpr_menos_fpr": 0.5183946488294313,
         "precisao_na_prevalencia": 0.18746081504702197,
         "fp_por_cwe": {
           "22": 37,

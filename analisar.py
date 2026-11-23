@@ -364,6 +364,8 @@ def complementar(rotulos: dict, casos: list[str], registros: list[dict], matrize
         por_condicao[c] = {
             "especificidade": esp,
             "mcc": razao(tp * tn - fp * fn, den),
+            # Índice J de Youden (TPR - FPR): pontuação dos scorecards do OWASP Benchmark.
+            "tpr_menos_fpr": None if sens is None or esp is None else sens + esp - 1,
             "precisao_na_prevalencia": razao(q * sens, q * sens + (1 - q) * (1 - esp)),
             "fp_por_cwe": {w: int(sum(matrizes[c][i, 1] for i, caso in enumerate(casos)
                                       if cwe[caso] == w))

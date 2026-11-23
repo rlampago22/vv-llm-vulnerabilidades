@@ -4,6 +4,7 @@ Uso:
   python coletar.py --conjunto piloto --dry-run   # mostra o primeiro prompt, sem chamar a API
   python coletar.py --conjunto piloto             # 8 casos x 4 condições x 5 = 160 chamadas
   python coletar.py --conjunto amostra            # 120 casos x 4 condições x 5 = 2.400 chamadas
+  python coletar.py --conjunto renomeacao         # 40 casos renomeados x zero-shot x 5 = 200 chamadas
 
 A coleta é retomável: ao rodar de novo, as requisições que já têm resposta
 (válida, abstenção ou bloqueio do filtro de conteúdo) são puladas, e só as que
@@ -25,8 +26,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
-from config import (ARQ_AMOSTRA, AZURE_API_VERSION, CWES, DIR_RESULTADOS, K_REPETICOES,
-                    MAX_TOKENS_SAIDA, MODELO, SEMENTE_ORDEM, TEMPERATURA, TOP_P)
+from config import (ARQ_AMOSTRA, AZURE_API_VERSION, CONDICOES_RENOMEACAO, CWES, DIR_DADOS,
+                    DIR_RESULTADOS, K_REPETICOES, MAX_TOKENS_SAIDA, MODELO, SEMENTE_ORDEM,
+                    TEMPERATURA, TOP_P)
 from parsing import interpretar
 from prompts import CONDICOES, carregar_skill, montar_mensagens
 
@@ -40,6 +42,8 @@ PARAMETROS = {
 VARIAVEIS_AZURE = ("AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_DEPLOYMENT")
 CONCLUIDOS = ("valido", "abstencao", "filtro")
 
+ARQ_RENOMEACAO = DIR_DADOS / "renomeacao.csv"
+
 _trava = threading.Lock()
 
 
@@ -48,20 +52,22 @@ def agora() -> str:
 
 
 def carregar_casos(conjunto: str) -> list[dict]:
-    if not ARQ_AMOSTRA.exists():
-        sys.exit("dados/amostra.csv não existe. Rode antes: python preparar_amostra.py")
-    with ARQ_AMOSTRA.open(encoding="utf-8") as f:
+    arquivo_csv = ARQ_RENOMEACAO if conjunto == "renomeacao" else ARQ_AMOSTRA
+    if not arquivo_csv.exists():
+        script = "preparar_renomeacao.py" if conjunto == "renomeacao" else "preparar_amostra.py"
+        sys.exit(f"{arquivo_csv.name} não existe. Rode antes: python {script}")
+    with arquivo_csv.open(encoding="utf-8") as f:
         casos = [c for c in csv.DictReader(f) if c["conjunto"] == conjunto]
     for caso in casos:
-        caso["codigo"] = (ARQ_AMOSTRA.parent / caso["arquivo"]).read_text(encoding="utf-8")
+        caso["codigo"] = (arquivo_csv.parent / caso["arquivo"]).read_text(encoding="utf-8")
     return casos
 
 
-def montar_tarefas(casos: list[dict]) -> list[dict]:
+def montar_tarefas(casos: list[dict], condicoes=CONDICOES) -> list[dict]:
     tarefas = [
         {"id": f"{caso['caso']}|{condicao}|{rep}", "caso": caso, "condicao": condicao,
          "repeticao": rep}
-        for caso, condicao, rep in itertools.product(casos, CONDICOES,
+        for caso, condicao, rep in itertools.product(casos, condicoes,
                                                      range(1, K_REPETICOES + 1))
     ]
     # Ordem aleatória (semente fixa) para não confundir deriva do serviço com condição.
@@ -136,7 +142,7 @@ def gravar(arquivo, registro: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--conjunto", choices=("piloto", "amostra"), required=True)
+    parser.add_argument("--conjunto", choices=("piloto", "amostra", "renomeacao"), required=True)
     parser.add_argument("--workers", type=int, default=4,
                         help="requisições simultâneas (padrão: 4)")
     parser.add_argument("--dry-run", action="store_true",
@@ -145,14 +151,15 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # console do Windows não é UTF-8 por padrão
 
     corpo_skill = carregar_skill()
-    tarefas = montar_tarefas(carregar_casos(args.conjunto))
+    condicoes = CONDICOES_RENOMEACAO if args.conjunto == "renomeacao" else CONDICOES
+    tarefas = montar_tarefas(carregar_casos(args.conjunto), condicoes)
     arquivo = DIR_RESULTADOS / f"{args.conjunto}.jsonl"
     concluidos = ids_concluidos(arquivo)
     pendentes = [t for t in tarefas if t["id"] not in concluidos]
     print(f"{len(tarefas)} tarefas, {len(concluidos)} já concluídas, {len(pendentes)} pendentes")
 
     if args.dry_run:
-        exemplo = next(t for t in tarefas if t["condicao"] == "fluxo_skill")
+        exemplo = next(t for t in tarefas if t["condicao"] == condicoes[-1])
         cwe_num, cwe_nome = CWES[exemplo["caso"]["categoria"]]
         for msg in montar_mensagens(exemplo["condicao"], cwe_num, cwe_nome,
                                     exemplo["caso"]["codigo"], corpo_skill):

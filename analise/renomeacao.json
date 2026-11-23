@@ -1,0 +1,41 @@
+{
+ "n_casos": 40,
+ "k": 5,
+ "condicoes": {
+  "zero_shot": {
+   "original": {
+    "tp": 99,
+    "fp": 35,
+    "fn": 1,
+    "tn": 65,
+    "abstencoes": 0,
+    "revocacao": 0.99,
+    "especificidade": 0.65,
+    "tpr_menos_fpr": 0.6400000000000001,
+    "casos_corretos": 33,
+    "concordancia_media": 0.99
+   },
+   "renomeado": {
+    "tp": 100,
+    "fp": 35,
+    "fn": 0,
+    "tn": 65,
+    "abstencoes": 0,
+    "revocacao": 1.0,
+    "especificidade": 0.65,
+    "tpr_menos_fpr": 0.6499999999999999,
+    "casos_corretos": 33,
+    "concordancia_media": 0.9800000000000001
+   },
+   "mcnemar": {
+    "so_primeira_acerta": 1,
+    "so_segunda_acerta": 1,
+    "p": 1.0
+   },
+   "casos_que_mudaram": [
+    "BenchmarkTest01811",
+    "BenchmarkTest01878"
+   ]
+  }
+ }
+}

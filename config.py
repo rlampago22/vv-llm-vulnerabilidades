@@ -55,5 +55,12 @@ ALFA = 0.05
 
 # Análises complementares definidas após a coleta (Seções 5.1, 5.2 e 5.5).
 SEMENTE_PERMUTACAO = 20261102
+
+# Teste de renomeação (contaminação), definido após a coleta principal: 5 + 5 casos
+# por CWE sorteados da amostra, só na condição zero-shot (a mais estável, o que
+# reduz o ruído entre execuções na comparação pareada com a coleta original).
+SEMENTE_RENOMEACAO = 20261123
+RENOMEACAO_POR_ROTULO = 5
+CONDICOES_RENOMEACAO = ("zero_shot",)
 N_PERMUTACOES = 20_000
 PREVALENCIA_TRIAGEM = 0.10

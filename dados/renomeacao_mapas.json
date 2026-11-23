@@ -1,0 +1,416 @@
+{
+ "BenchmarkTest00092": {
+  "userCookie": "v1",
+  "rd": "v2",
+  "theCookies": "v3",
+  "param": "v4",
+  "theCookie": "v5",
+  "bar": "v6",
+  "guess": "v7",
+  "cmd": "v8",
+  "argsEnv": "v9",
+  "r": "v10",
+  "p": "v11",
+  "e": "v12"
+ },
+ "BenchmarkTest00151": {
+  "param": "v1",
+  "bar": "v2",
+  "valuesList": "v3",
+  "obj": "v4"
+ },
+ "BenchmarkTest00203": {
+  "param": "v1",
+  "bar": "v2",
+  "sql": "v3",
+  "statement": "v4",
+  "e": "v5"
+ },
+ "BenchmarkTest00220": {
+  "param": "v1",
+  "names": "v2",
+  "name": "v3",
+  "values": "v4",
+  "a25969": "v5",
+  "b25969": "v6",
+  "map25969": "v7",
+  "c25969": "v8",
+  "d25969": "v9",
+  "e25969": "v10",
+  "f25969": "v11",
+  "thing": "v12",
+  "g25969": "v13",
+  "bar": "v14",
+  "fileName": "v15",
+  "fos": "v16",
+  "e": "v17"
+ },
+ "BenchmarkTest00336": {
+  "param": "v1",
+  "headers": "v2",
+  "bar": "v3",
+  "sql": "v4",
+  "results": "v5",
+  "e": "v6"
+ },
+ "BenchmarkTest00375": {
+  "param": "v1",
+  "bar": "v2",
+  "obj": "v3"
+ },
+ "BenchmarkTest00394": {
+  "param": "v1",
+  "bar": "v2",
+  "valuesList": "v3"
+ },
+ "BenchmarkTest00527": {
+  "value": "v1",
+  "param": "v2",
+  "names": "v3",
+  "name": "v4",
+  "values": "v5",
+  "thing": "v6",
+  "bar": "v7",
+  "fileTarget": "v8"
+ },
+ "BenchmarkTest00567": {
+  "value": "v1",
+  "param": "v2",
+  "names": "v3",
+  "name": "v4",
+  "values": "v5",
+  "bar": "v6",
+  "cmd": "v7",
+  "osName": "v8",
+  "r": "v9",
+  "p": "v10",
+  "e": "v11"
+ },
+ "BenchmarkTest00569": {
+  "value": "v1",
+  "param": "v2",
+  "names": "v3",
+  "name": "v4",
+  "values": "v5",
+  "a6821": "v6",
+  "b6821": "v7",
+  "map6821": "v8",
+  "c6821": "v9",
+  "d6821": "v10",
+  "e6821": "v11",
+  "f6821": "v12",
+  "thing": "v13",
+  "g6821": "v14",
+  "bar": "v15",
+  "cmd": "v16",
+  "a1": "v17",
+  "a2": "v18",
+  "osName": "v19",
+  "argsEnv": "v20",
+  "r": "v21",
+  "p": "v22",
+  "e": "v23"
+ },
+ "BenchmarkTest00625": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "fileName": "v4",
+  "fos": "v5",
+  "e": "v6"
+ },
+ "BenchmarkTest00657": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "map27260": "v4",
+  "cmd": "v5",
+  "osName": "v6",
+  "r": "v7",
+  "p": "v8",
+  "e": "v9"
+ },
+ "BenchmarkTest00679": {
+  "scr": "v1",
+  "param": "v2",
+  "thing": "v3",
+  "bar": "v4",
+  "sql": "v5",
+  "results": "v6",
+  "e": "v7"
+ },
+ "BenchmarkTest01173": {
+  "param": "v1",
+  "headers": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "valuesList": "v4"
+ },
+ "BenchmarkTest01175": {
+  "param": "v1",
+  "headers": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "obj": "v4"
+ },
+ "BenchmarkTest01179": {
+  "param": "v1",
+  "headers": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1"
+ },
+ "BenchmarkTest01234": {
+  "param": "v1",
+  "bar": "v2",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "fileTarget": "v3",
+  "thing": "v4"
+ },
+ "BenchmarkTest01285": {
+  "param": "v1",
+  "bar": "v2",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "cmd": "v3",
+  "osName": "v4",
+  "r": "v5",
+  "p": "v6",
+  "e": "v7",
+  "valuesList": "v8"
+ },
+ "BenchmarkTest01442": {
+  "value": "v1",
+  "param": "v2",
+  "names": "v3",
+  "name": "v4",
+  "values": "v5",
+  "bar": "v6",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "cmd": "v7",
+  "argsEnv": "v8",
+  "r": "v9",
+  "p": "v10",
+  "e": "v11",
+  "guess": "v12"
+ },
+ "BenchmarkTest01628": {
+  "values": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "sql": "v4",
+  "statement": "v5",
+  "e": "v6",
+  "guess": "v7"
+ },
+ "BenchmarkTest01642": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "fileTarget": "v5",
+  "thing": "v6"
+ },
+ "BenchmarkTest01669": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "Test": "Classe1",
+  "doSomething": "metodo1"
+ },
+ "BenchmarkTest01691": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "cmd": "v5",
+  "argsEnv": "v6",
+  "r": "v7",
+  "p": "v8",
+  "e": "v9",
+  "guess": "v10"
+ },
+ "BenchmarkTest01723": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "sql": "v5",
+  "results": "v6",
+  "e": "v7"
+ },
+ "BenchmarkTest01747": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "startURIslashes": "v4",
+  "fileURI": "v5",
+  "fileTarget": "v6",
+  "e": "v7"
+ },
+ "BenchmarkTest01793": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "cmd": "v4",
+  "argsEnv": "v5",
+  "r": "v6",
+  "p": "v7",
+  "e": "v8",
+  "guess": "v9"
+ },
+ "BenchmarkTest01811": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "Test": "Classe1",
+  "doSomething": "metodo1",
+  "sql": "v4",
+  "results": "v5",
+  "e": "v6",
+  "map31047": "v7"
+ },
+ "BenchmarkTest01878": {
+  "userCookie": "v1",
+  "rd": "v2",
+  "theCookies": "v3",
+  "param": "v4",
+  "theCookie": "v5",
+  "bar": "v6",
+  "doSomething": "metodo1",
+  "sql": "v7",
+  "connection": "v8",
+  "statement": "v9",
+  "e": "v10"
+ },
+ "BenchmarkTest01917": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1"
+ },
+ "BenchmarkTest01927": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1"
+ },
+ "BenchmarkTest02028": {
+  "param": "v1",
+  "headers": "v2",
+  "bar": "v3",
+  "doSomething": "metodo1",
+  "fileTarget": "v4",
+  "guess": "v5"
+ },
+ "BenchmarkTest02105": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1",
+  "fileTarget": "v3",
+  "valuesList": "v4"
+ },
+ "BenchmarkTest02107": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1",
+  "fileTarget": "v3"
+ },
+ "BenchmarkTest02129": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1",
+  "obj": "v3"
+ },
+ "BenchmarkTest02149": {
+  "param": "v1",
+  "bar": "v2",
+  "doSomething": "metodo1",
+  "cmd": "v3",
+  "a1": "v4",
+  "a2": "v5",
+  "osName": "v6",
+  "argsEnv": "v7",
+  "r": "v8",
+  "p": "v9",
+  "e": "v10"
+ },
+ "BenchmarkTest02341": {
+  "value": "v1",
+  "param": "v2",
+  "names": "v3",
+  "name": "v4",
+  "values": "v5",
+  "bar": "v6",
+  "doSomething": "metodo1",
+  "cmd": "v7",
+  "argsEnv": "v8",
+  "r": "v9",
+  "p": "v10",
+  "e": "v11",
+  "guess": "v12"
+ },
+ "BenchmarkTest02452": {
+  "scr": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "doSomething": "metodo1",
+  "sql": "v4",
+  "list": "v5",
+  "o": "v6",
+  "e": "v7",
+  "a91263": "v8",
+  "b91263": "v9",
+  "map91263": "v10",
+  "c91263": "v11",
+  "d91263": "v12",
+  "e91263": "v13",
+  "f91263": "v14",
+  "thing": "v15",
+  "g91263": "v16"
+ },
+ "BenchmarkTest02531": {
+  "values": "v1",
+  "param": "v2",
+  "bar": "v3",
+  "doSomething": "metodo1",
+  "sql": "v4",
+  "connection": "v5",
+  "statement": "v6",
+  "e": "v7"
+ },
+ "BenchmarkTest02556": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "doSomething": "metodo1",
+  "fileTarget": "v5"
+ },
+ "BenchmarkTest02654": {
+  "queryString": "v1",
+  "paramval": "v2",
+  "param": "v3",
+  "bar": "v4",
+  "doSomething": "metodo1",
+  "sql": "v5",
+  "statement": "v6",
+  "e": "v7",
+  "valuesList": "v8"
+ }
+}

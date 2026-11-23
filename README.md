@@ -18,6 +18,7 @@ espelham a Seção 4 do artigo: mudou um, mude o outro.
 | `parsing.py` | regra de parsing pré-registrada (válido x abstenção) |
 | `test_unidades.py` | testes do parsing e da anonimização |
 | `analisar.py` | métricas, estabilidade, testes de hipótese e tabelas da Seção 5 |
+| `renomeacao.py`, `preparar_renomeacao.py`, `analisar_renomeacao.py` | teste de renomeação (contaminação), Seção 4.6 |
 
 ## Organização do repositório
 
@@ -151,6 +152,21 @@ precisão sob prevalência de 10%, diferenças pareadas de F1, falsos positivos 
 CWE e o teste de permutação entre rótulo e `system_fingerprint`. Foram definidas
 depois da coleta, a partir das revisões do artigo; o teste de permutação usa
 `SEMENTE_PERMUTACAO`.
+
+## 7. Teste de renomeação (contaminação)
+
+Definido após a coleta principal. Sorteia 40 casos da amostra (5 + 5 por CWE),
+troca por nomes neutros os identificadores declarados em cada caso
+(`renomeacao.py`) e os reenvia na condição zero-shot, com K = 5:
+
+```powershell
+python preparar_renomeacao.py                  # grava dados/casos_renomeados/ e dados/renomeacao.csv
+python coletar.py --conjunto renomeacao        # 40 x 1 x 5 = 200 chamadas
+python analisar_renomeacao.py                  # compara com a coleta original; grava analise/renomeacao.json
+```
+
+Resultado (23/11/2026): 33 de 40 casos corretos antes e depois da renomeação
+(McNemar exato, p = 1,0).
 
 ## Formato do log (`resultados\<conjunto>.jsonl`)
 

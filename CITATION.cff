@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "Se usar este material, cite-o com os dados abaixo."
+type: software
+title: "Pacote de replicação: estratégias de prompting, skill de segurança e estabilidade de um LLM na detecção de vulnerabilidades"
+abstract: >-
+  Código, prompts, skill, casos anonimizados do OWASP Benchmark for Java e
+  respostas brutas do GPT-4.1-mini (Azure OpenAI) do experimento controlado
+  com quatro condições e cinco execuções por caso, mais o teste de renomeação.
+authors:
+  - given-names: Gabriel
+    family-names: Martinez
+    affiliation: Universidade Federal do Pampa (Unipampa)
+  - given-names: Kaique
+    family-names: Schio
+    affiliation: Universidade Federal do Pampa (Unipampa)
+  - given-names: Luan
+    family-names: Martins
+    affiliation: Universidade Federal do Pampa (Unipampa)
+  - given-names: Marcus
+    family-names: Querol
+    affiliation: Universidade Federal do Pampa (Unipampa)
+  - given-names: Pedro
+    family-names: Ayres
+    affiliation: Universidade Federal do Pampa (Unipampa)
+  - given-names: Vinicius
+    family-names: Gonçalves
+    affiliation: Universidade Federal do Pampa (Unipampa)
+license: MIT
+repository-code: "https://github.com/rlampago22/vv-llm-vulnerabilidades"
+keywords:
+  - large language models
+  - prompt engineering
+  - vulnerability detection
+  - OWASP Benchmark
+  - replication package

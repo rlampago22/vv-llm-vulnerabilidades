@@ -5,6 +5,7 @@ Rodar com: python test_unidades.py   (ou: python -m pytest test_unidades.py)
 
 from anonimizacao import anonimizar, neutralizar_literais, remover_comentarios
 from parsing import interpretar
+from renomeacao import renomear
 
 JAVA = '''/**
  * OWASP Benchmark Project v1.2
@@ -83,6 +84,28 @@ def test_parsing_filtro_separado_da_abstencao():
     r = interpretar('{"veredito": "VULNERAVEL"}', "content_filter")
     assert r["status"] == "filtro" and r["veredito"] is None
     assert r["motivo"] == "filtro_resposta"
+
+
+def test_renomeia_so_declarados_e_preserva_literais():
+    codigo = (
+        'public class CasoAnalisado extends HttpServlet {\n'
+        '  public void doPost(HttpServletRequest request, HttpServletResponse response) {\n'
+        '    String param = request.getParameter("param");\n'
+        '    String bar = doSomething(request, param);\n'
+        '    java.util.List<String> lista = new java.util.ArrayList<String>();\n'
+        '    lista.add(bar); response.getWriter().println(bar.length());\n'
+        '  }\n'
+        '  private static String doSomething(HttpServletRequest request, String param) {\n'
+        '    return param;\n'
+        '  }\n'
+        '}\n')
+    novo, mapa = renomear(codigo)
+    assert mapa == {"param": "v1", "bar": "v2", "lista": "v3", "doSomething": "metodo1"}
+    assert '"param"' in novo  # literal intacto
+    assert "request.getParameter" in novo and "response.getWriter" in novo
+    assert ".length()" in novo and ".add(v2)" in novo  # membros com ponto intactos
+    assert "class CasoAnalisado" in novo and "void doPost(" in novo
+    assert renomear(codigo) == (novo, mapa)  # determinístico
 
 
 if __name__ == "__main__":
